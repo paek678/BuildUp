@@ -1,0 +1,29 @@
+{
+    "BasicMove": {
+        "checkpoints": [
+            {
+                "steps": 16420,
+                "file_path": "results\\BasicMove1_Re\\BasicMove\\BasicMove-16420.onnx",
+                "reward": -3.9274062599454607,
+                "creation_time": 1775042294.91657,
+                "auxillary_file_paths": [
+                    "results\\BasicMove1_Re\\BasicMove\\BasicMove-16420.pt"
+                ]
+            }
+        ],
+        "final_checkpoint": {
+            "steps": 16420,
+            "file_path": "results\\BasicMove1_Re\\BasicMove.onnx",
+            "reward": -3.9274062599454607,
+            "creation_time": 1775042294.91657,
+            "auxillary_file_paths": [
+                "results\\BasicMove1_Re\\BasicMove\\BasicMove-16420.pt"
+            ]
+        }
+    },
+    "metadata": {
+        "stats_format_version": "0.3.0",
+        "mlagents_version": "1.2.0.dev0",
+        "torch_version": "2.2.2+cu121"
+    }
+}

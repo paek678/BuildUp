@@ -1,0 +1,65 @@
+{
+    "BasicMove": {
+        "checkpoints": [
+            {
+                "steps": 999988,
+                "file_path": "results\\BasicMove2\\BasicMove\\BasicMove-999988.onnx",
+                "reward": -0.23816502590974173,
+                "creation_time": 1775065035.5686953,
+                "auxillary_file_paths": [
+                    "results\\BasicMove2\\BasicMove\\BasicMove-999988.pt"
+                ]
+            },
+            {
+                "steps": 1499942,
+                "file_path": "results\\BasicMove2\\BasicMove\\BasicMove-1499942.onnx",
+                "reward": -0.6145364912226796,
+                "creation_time": 1775068570.5585456,
+                "auxillary_file_paths": [
+                    "results\\BasicMove2\\BasicMove\\BasicMove-1499942.pt"
+                ]
+            },
+            {
+                "steps": 1999982,
+                "file_path": "results\\BasicMove2\\BasicMove\\BasicMove-1999982.onnx",
+                "reward": -0.7409653098632892,
+                "creation_time": 1775072114.0599637,
+                "auxillary_file_paths": [
+                    "results\\BasicMove2\\BasicMove\\BasicMove-1999982.pt"
+                ]
+            },
+            {
+                "steps": 2000046,
+                "file_path": "results\\BasicMove2\\BasicMove\\BasicMove-2000046.onnx",
+                "reward": -0.7409653098632892,
+                "creation_time": 1775072114.0917418,
+                "auxillary_file_paths": [
+                    "results\\BasicMove2\\BasicMove\\BasicMove-2000046.pt"
+                ]
+            },
+            {
+                "steps": 2000046,
+                "file_path": "results\\BasicMove2\\BasicMove\\BasicMove-2000046.onnx",
+                "reward": null,
+                "creation_time": 1775973287.1441574,
+                "auxillary_file_paths": [
+                    "results\\BasicMove2\\BasicMove\\BasicMove-2000046.pt"
+                ]
+            }
+        ],
+        "final_checkpoint": {
+            "steps": 2000046,
+            "file_path": "results\\BasicMove2\\BasicMove.onnx",
+            "reward": null,
+            "creation_time": 1775973287.1441574,
+            "auxillary_file_paths": [
+                "results\\BasicMove2\\BasicMove\\BasicMove-2000046.pt"
+            ]
+        }
+    },
+    "metadata": {
+        "stats_format_version": "0.3.0",
+        "mlagents_version": "1.2.0.dev0",
+        "torch_version": "2.2.2+cu121"
+    }
+}

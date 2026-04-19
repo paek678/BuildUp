@@ -1,0 +1,11 @@
+{
+  "mcpServers": {
+    "mcp-unity": {
+      "command": "cmd",
+      "args": [
+        "/c",
+        "C:\\Users\\paek6\\Downloads\\Buildup\\Buildup\\tools\\mcp-unity-codex.cmd"
+      ]
+    }
+  }
+}

@@ -1,0 +1,26 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a193f29c932883b4ba06b526288ee2f4, type: 3}
+  m_Name: OverchargeMode
+  m_EditorClassIdentifier: Assembly-CSharp::SkillDefinition
+  SkillId: OverchargeMode
+  DisplayName: "\uACFC\uCDA9\uC804 \uBAA8\uB4DC"
+  Description: "\uC800\uCCB4\uB825/\uD398\uC774\uC988 \uC9C4\uC785 \uC2DC \uACF5\uACA9\uB825
+    +15%, \uC790\uAE30 \uBC29\uC5B4\uB825 -10%. 6\uCD08."
+  Icon: {fileID: 0}
+  Cooldown: 18
+  Range: 40
+  TargetType: 2
+  RoleTags:
+  - DamageUp
+  - SelfBuff
+  CounterTags: []

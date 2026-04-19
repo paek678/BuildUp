@@ -1,0 +1,27 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a193f29c932883b4ba06b526288ee2f4, type: 3}
+  m_Name: SurvivalPulse
+  m_EditorClassIdentifier: Assembly-CSharp::SkillDefinition
+  SkillId: SurvivalPulse
+  DisplayName: "\uC0DD\uC874 \uB9E5\uB3D9"
+  Description: "\uC800\uCCB4\uB825 \uC2DC \uC989\uC2DC \uD68C\uBCF5 + \uCCB4\uB825
+    \uC7AC\uC0DD + \uC815\uD654 1\uD68C."
+  Icon: {fileID: 0}
+  Cooldown: 14
+  Range: 40
+  TargetType: 2
+  RoleTags:
+  - Heal
+  - Cleanse
+  - Survival
+  CounterTags: []

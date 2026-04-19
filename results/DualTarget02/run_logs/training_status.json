@@ -1,0 +1,29 @@
+{
+    "DualTarget": {
+        "checkpoints": [
+            {
+                "steps": 27176,
+                "file_path": "results\\DualTarget02\\DualTarget\\DualTarget-27176.onnx",
+                "reward": 0.7358938893585494,
+                "creation_time": 1776403292.0712547,
+                "auxillary_file_paths": [
+                    "results\\DualTarget02\\DualTarget\\DualTarget-27176.pt"
+                ]
+            }
+        ],
+        "final_checkpoint": {
+            "steps": 27176,
+            "file_path": "results\\DualTarget02\\DualTarget.onnx",
+            "reward": 0.7358938893585494,
+            "creation_time": 1776403292.0712547,
+            "auxillary_file_paths": [
+                "results\\DualTarget02\\DualTarget\\DualTarget-27176.pt"
+            ]
+        }
+    },
+    "metadata": {
+        "stats_format_version": "0.3.0",
+        "mlagents_version": "1.2.0.dev0",
+        "torch_version": "2.2.2+cu121"
+    }
+}

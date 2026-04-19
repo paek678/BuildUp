@@ -1,0 +1,15 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(ls -la /c/Users/paek6/Downloads/Buildup/Buildup/Library/PackageCache/com.unity.behavior*)",
+      "Bash(find /c/Users/paek6/Downloads/Buildup/Buildup/Library/PackageCache/com.unity.behavior*/Runtime -name \"*.cs\" -type f)",
+      "Bash(find /c/Users/paek6/Downloads/Buildup/Buildup/Library/PackageCache/com.unity.behavior*/Runtime/Execution -name \"*.cs\" -type f)",
+      "Bash(find \"c:/Users/paek6/Downloads/Buildup/Buildup/Assets/Scripts/AI\" -type f \\\\\\( -name \"*.cs\" -o -name \"*.asset\" -o -name \"*.onnx\" \\\\\\) -exec ls -lh {} \\\\;)",
+      "Bash(ls -la /c/Users/paek6/Downloads/Buildup/Buildup/Assets/StatsManager.cs*)",
+      "Bash(find /c/Users/paek6/Downloads/Buildup/Buildup/Assets/Scripts -name \"*.cs\" -exec grep -l \"enum StatusType\\\\|enum BuffType\\\\|enum DebuffType\\\\|enum ParryRewardType\" {} \\\\;)"
+    ],
+    "additionalDirectories": [
+      "c:\\Users\\paek6\\Downloads\\Buildup\\Buildup\\Assets\\Scripts\\AI\\BossAI"
+    ]
+  }
+}

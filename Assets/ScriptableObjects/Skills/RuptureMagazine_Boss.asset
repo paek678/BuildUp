@@ -1,0 +1,27 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a193f29c932883b4ba06b526288ee2f4, type: 3}
+  m_Name: RuptureMagazine_Boss
+  m_EditorClassIdentifier: Assembly-CSharp::SkillDefinition
+  SkillId: RuptureMagazine_Boss
+  DisplayName: "\uD30C\uC5F4 \uD0C4\uCC3D(\uBCF4\uC2A4)"
+  Description: "8\uBC29\uD5A5 \uD3ED\uBC1C \uD328\uD134."
+  Icon: {fileID: 0}
+  Cooldown: 9
+  Range: 40
+  TargetType: 1
+  RoleTags:
+  - Vulnerable
+  - AOE
+  - Ranged
+  CounterTags:
+  - DefUp
