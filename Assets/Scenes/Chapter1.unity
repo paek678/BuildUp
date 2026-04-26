@@ -702,6 +702,51 @@ Transform:
   m_Children: []
   m_Father: {fileID: 1911821262}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &204692772
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 204692774}
+  - component: {fileID: 204692773}
+  m_Layer: 0
+  m_Name: SkillDistributor
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &204692773
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 204692772}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e0c3890e33efd2d43b45cb29501884d2, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::SkillDistributor
+  _loadouts: []
+--- !u!4 &204692774
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 204692772}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &252720510
 GameObject:
   m_ObjectHideFlags: 0
@@ -2492,7 +2537,7 @@ GameObject:
   m_Component:
   - component: {fileID: 578593650}
   m_Layer: 0
-  m_Name: SpawnPoint2
+  m_Name: (Train) SpawnPoint2
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -2507,7 +2552,7 @@ Transform:
   m_GameObject: {fileID: 578593649}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -18, y: 0, z: 13.1}
+  m_LocalPosition: {x: -16.6, y: 0, z: 13.8}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -2935,7 +2980,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 3175477621297731273, guid: 3596c5949c5c5924c921a308182dbcb0, type: 3}
       propertyPath: m_LocalPosition.x
-      value: 9.86223
+      value: 13.3
       objectReference: {fileID: 0}
     - target: {fileID: 3175477621297731273, guid: 3596c5949c5c5924c921a308182dbcb0, type: 3}
       propertyPath: m_LocalPosition.y
@@ -2943,7 +2988,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 3175477621297731273, guid: 3596c5949c5c5924c921a308182dbcb0, type: 3}
       propertyPath: m_LocalPosition.z
-      value: -0.23987007
+      value: -21.7
       objectReference: {fileID: 0}
     - target: {fileID: 3175477621297731273, guid: 3596c5949c5c5924c921a308182dbcb0, type: 3}
       propertyPath: m_LocalRotation.w
@@ -3030,6 +3075,12 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 7239515687370940878, guid: 3596c5949c5c5924c921a308182dbcb0, type: 3}
       insertIndex: -1
       addedObject: {fileID: 2004071436}
+    - targetCorrespondingSourceObject: {fileID: 7239515687370940878, guid: 3596c5949c5c5924c921a308182dbcb0, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 2004071442}
+    - targetCorrespondingSourceObject: {fileID: 7239515687370940878, guid: 3596c5949c5c5924c921a308182dbcb0, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 2004071447}
     - targetCorrespondingSourceObject: {fileID: 5535888591368801186, guid: 3596c5949c5c5924c921a308182dbcb0, type: 3}
       insertIndex: -1
       addedObject: {fileID: 1428031444}
@@ -3270,11 +3321,15 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 383674549258538840, guid: 0227f316bde71754081547553f194b96, type: 3}
       propertyPath: m_Name
-      value: Boss
+      value: (Train) Boss
       objectReference: {fileID: 0}
     - target: {fileID: 383674549258538840, guid: 0227f316bde71754081547553f194b96, type: 3}
       propertyPath: m_IsActive
       value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 383674549258538840, guid: 0227f316bde71754081547553f194b96, type: 3}
+      propertyPath: m_TagString
+      value: Boss
       objectReference: {fileID: 0}
     - target: {fileID: 3154600866040741233, guid: 0227f316bde71754081547553f194b96, type: 3}
       propertyPath: m_Enabled
@@ -3367,10 +3422,28 @@ PrefabInstance:
       addedObject: {fileID: 1739756536}
     - targetCorrespondingSourceObject: {fileID: 383674549258538840, guid: 0227f316bde71754081547553f194b96, type: 3}
       insertIndex: -1
-      addedObject: {fileID: 1739756539}
+      addedObject: {fileID: 1739756538}
     - targetCorrespondingSourceObject: {fileID: 383674549258538840, guid: 0227f316bde71754081547553f194b96, type: 3}
       insertIndex: -1
-      addedObject: {fileID: 1739756538}
+      addedObject: {fileID: 1739756544}
+    - targetCorrespondingSourceObject: {fileID: 383674549258538840, guid: 0227f316bde71754081547553f194b96, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1739756543}
+    - targetCorrespondingSourceObject: {fileID: 383674549258538840, guid: 0227f316bde71754081547553f194b96, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1739756542}
+    - targetCorrespondingSourceObject: {fileID: 383674549258538840, guid: 0227f316bde71754081547553f194b96, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1739756541}
+    - targetCorrespondingSourceObject: {fileID: 383674549258538840, guid: 0227f316bde71754081547553f194b96, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1739756540}
+    - targetCorrespondingSourceObject: {fileID: 383674549258538840, guid: 0227f316bde71754081547553f194b96, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1739756546}
+    - targetCorrespondingSourceObject: {fileID: 383674549258538840, guid: 0227f316bde71754081547553f194b96, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1739756545}
   m_SourcePrefab: {fileID: 100100000, guid: 0227f316bde71754081547553f194b96, type: 3}
 --- !u!1 &889740948
 GameObject:
@@ -3382,7 +3455,7 @@ GameObject:
   m_Component:
   - component: {fileID: 889740949}
   m_Layer: 0
-  m_Name: SpawnPoint4
+  m_Name: (Train) SpawnPoint4
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -3397,7 +3470,7 @@ Transform:
   m_GameObject: {fileID: 889740948}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 13.5, y: 0, z: -17.6}
+  m_LocalPosition: {x: 3.8, y: 0, z: -13.2}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -3449,7 +3522,7 @@ GameObject:
   m_Component:
   - component: {fileID: 982834993}
   m_Layer: 0
-  m_Name: SpawnPoint1
+  m_Name: (Train) SpawnPoint1
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -3464,7 +3537,7 @@ Transform:
   m_GameObject: {fileID: 982834992}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -18.3, y: 0, z: -16.8}
+  m_LocalPosition: {x: -15.5, y: 0, z: -8.3}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -4425,7 +4498,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1332013078}
   m_Layer: 0
-  m_Name: SpawnPoint3
+  m_Name: (Train) SpawnPoint3
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -4440,7 +4513,7 @@ Transform:
   m_GameObject: {fileID: 1332013077}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 13.5, y: 0, z: 13.3}
+  m_LocalPosition: {x: 7.7, y: 0, z: 9.1}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -6017,11 +6090,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 66aafecb6faf72a47a2fe5e42bfeb6aa, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::BossController
-  bossStats: {fileID: 11400000, guid: d4dd746456a03144a8eff350dc2b343c, type: 2}
+  bossStats: {fileID: 11400000, guid: bbedd084f327479468a84968c5e0250e, type: 2}
   _statManager: {fileID: 1739756537}
   _stateManager: {fileID: 1739756536}
   _gameManager: {fileID: 1819722034}
   effectPrefab: {fileID: 8898742708949690364, guid: e537a06022a9a3c45aa1f6fed5cc5a22, type: 3}
+  _trainingMode: 1
 --- !u!195 &1739756527
 NavMeshAgent:
   m_ObjectHideFlags: 0
@@ -6056,25 +6130,25 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1739756520}
-  m_Enabled: 0
+  m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 5d1c4e0b1822b495aa52bc52839ecb30, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Unity.ML-Agents::Unity.MLAgents.Policies.BehaviorParameters
   m_BrainParameters:
-    VectorObservationSize: 11
+    VectorObservationSize: 55
     NumStackedVectorObservations: 1
     m_ActionSpec:
       m_NumContinuousActions: 0
-      BranchSizes: 04000000
-    VectorActionSize: 04000000
+      BranchSizes: 0400000004000000
+    VectorActionSize: 0400000004000000
     VectorActionDescriptions: []
     VectorActionSpaceType: 0
     hasUpgradedBrainParametersWithActionSpec: 1
   m_Model: {fileID: 0}
   m_InferenceDevice: 0
   m_BehaviorType: 0
-  m_BehaviorName: DualTarget
+  m_BehaviorName: SkillIntro
   TeamId: 0
   m_UseChildSensors: 1
   m_UseChildActuators: 1
@@ -6131,7 +6205,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1739756520}
-  m_Enabled: 0
+  m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 3a5c9d521e5ef4759a8246a07d52221e, type: 3}
   m_Name: 
@@ -6139,25 +6213,153 @@ MonoBehaviour:
   DecisionPeriod: 5
   DecisionStep: 0
   TakeActionsBetweenDecisions: 1
---- !u!114 &1739756539
+--- !u!114 &1739756540
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1739756520}
-  m_Enabled: 0
+  m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: ec9312ab248bd784fa3d51eda5dabd4d, type: 3}
+  m_Script: {fileID: 11500000, guid: 024d296822d4c824e91509a4df32638d, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::DualTargetAgent
+  m_EditorClassIdentifier: Assembly-CSharp::SkillManager
+  _slots:
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  _autoCastEnabled: 0
+  _logAutoCast: 1
+  _roundRobinEnabled: 1
+  _statManager: {fileID: 1739756537}
+  _stateManager: {fileID: 1739756536}
+  _gameManager: {fileID: 1819722034}
+  _owner: {fileID: 0}
+--- !u!114 &1739756541
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1739756520}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f847c085b853a8f48bcb400b32c5ddc7, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::SkillExecutor
+  _logExecution: 1
+--- !u!114 &1739756542
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1739756520}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9014138688c048149b7c15b138a45b57, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::BossActionWeightCalculator
+  _biasTracker: {fileID: 1739756543}
+  _bossController: {fileID: 1739756521}
+  _baseWeight: 1
+  _floorWeight: 0.1
+  _gateThreshold: 0.05
+  _sameActionPenalty: -0.2
+  _recentRepeatPenalty: -0.35
+  _consecutivePenalty: -0.15
+  _phaseTransitionBonus: 0.2
+  _legalActions: 000000000000000000
+--- !u!114 &1739756543
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1739756520}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: dd0fb16a841e96244a99e70e616e5cfa, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PlayerBiasTracker
+  _collector: {fileID: 1739756544}
+  _meleeThreshold: 12
+  _rangedThreshold: 25
+  _teamCloseThreshold: 10
+  _teamFarThreshold: 25
+  _normalRise: 0.02
+  _strongRise: 0.05
+  _normalFall: -0.02
+  _naturalDecay: -0.01
+  _updateInterval: 0.5
+  _logWindow: 18
+--- !u!114 &1739756544
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1739756520}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 363c910951f4579429850557d5faaa01, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::BossObservationCollector
+  _p1: {fileID: 2004071421}
+  _p2: {fileID: 1994669177}
+  _bossController: {fileID: 1739756521}
+  _bossStatManager: {fileID: 1739756537}
+  _skillExecutor: {fileID: 1739756541}
+  _bossSkills:
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  _maxDistance: 55
+  _maxCooldown: 30
+  _maxBurstDmg: 50
+  _maxSpeed: 12
+  _maxParryCount: 5
+  _maxBossPhase: 2
+--- !u!114 &1739756545
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1739756520}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3d62d38858e30394987b75ba0636bd38, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::TrainingSkillManager
+  _skillPool: {fileID: 11400000, guid: e38c12fcf1789e5408236435424c987d, type: 2}
+  _initialUnlockCount: 1
+  _maxUnlockCount: 3
+  _unlockInterval: 15
+  _skillManager: {fileID: 1739756540}
+  _collector: {fileID: 1739756544}
+  _executor: {fileID: 1739756541}
+--- !u!114 &1739756546
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1739756520}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: dd32804eba4c8144d99f755b5a74e443, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::SkillIntroAgent
   agentParameters:
     maxStep: 0
   hasUpgradedFromAgentParameters: 1
-  MaxStep: 50000
-  _moveSpeed: 15
+  MaxStep: 8000
+  _moveSpeed: 10
   _rotationSpeed: 200
-  _maxDistance: 55
   _bossSpawnPoint: {fileID: 2061452137}
   _p1Object: {fileID: 2004071421}
   _p2Object: {fileID: 1994669177}
@@ -6166,20 +6368,42 @@ MonoBehaviour:
   - {fileID: 578593650}
   - {fileID: 1332013078}
   - {fileID: 889740949}
-  _doubleTouchWindow: 3
+  _bossController: {fileID: 0}
+  _collector: {fileID: 0}
+  _trainingSkillManager: {fileID: 0}
+  _skillManager: {fileID: 0}
+  _skillExecutor: {fileID: 0}
+  _p1TrainingSkillMgr: {fileID: 2004071447}
+  _p2TrainingSkillMgr: {fileID: 1994669195}
   _proximityRadius: 5
-  _episodeMaxDurationSec: 60
+  _touchReward: 0.2
+  _fastDoubleTouchBonus: 0.3
+  _doubleTouchWindow: 3
+  _touchEndEnabled: 0
   _noTouchPenalty: -0.5
   _partialTouchPenalty: -0.2
-  _outOfBoundsY: -5
-  _outOfBoundsPenalty: -1
-  _fastDoubleTouchBonus: 0.5
-  _wStepPenalty: 0.005
-  _wProgress: 0.05
+  _wStepPenalty: 0.001
+  _wFireReward: 0
+  _wMissPenalty: 0.05
+  _wOutOfRangePenalty: 0.1
+  _wDamageReward: 0.5
+  _wShieldDamageReward: 0.3
+  _wHitReward: 0.2
+  _wProgress: 0.1
   _wAlign: 0.003
   _wIdlePenalty: 0.005
-  _minMoveDelta: 0.05
   _alignDotThreshold: 0.7
+  _minMoveDelta: 0.05
+  _wRangeMaintain: 0.1
+  _rangeTolerance: 2
+  _wWallHitPenalty: 0.05
+  _wWallStayPenalty: 0.01
+  _episodeMaxDuration: 90
+  _outOfBoundsY: -5
+  _outOfBoundsPenalty: -1
+  _bossDiedPenalty: 1
+  _allKilledReward: 1
+  _playerKilledReward: 0.3
 --- !u!1 &1776433597
 GameObject:
   m_ObjectHideFlags: 0
@@ -6636,7 +6860,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 3175477621297731273, guid: 3596c5949c5c5924c921a308182dbcb0, type: 3}
       propertyPath: m_LocalPosition.x
-      value: 15.872231
+      value: 12
       objectReference: {fileID: 0}
     - target: {fileID: 3175477621297731273, guid: 3596c5949c5c5924c921a308182dbcb0, type: 3}
       propertyPath: m_LocalPosition.y
@@ -6644,7 +6868,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 3175477621297731273, guid: 3596c5949c5c5924c921a308182dbcb0, type: 3}
       propertyPath: m_LocalPosition.z
-      value: 7.62013
+      value: 42.4
       objectReference: {fileID: 0}
     - target: {fileID: 3175477621297731273, guid: 3596c5949c5c5924c921a308182dbcb0, type: 3}
       propertyPath: m_LocalRotation.w
@@ -6680,7 +6904,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 7239515687370940878, guid: 3596c5949c5c5924c921a308182dbcb0, type: 3}
       propertyPath: m_IsActive
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 7721926601859560320, guid: 3596c5949c5c5924c921a308182dbcb0, type: 3}
       propertyPath: m_IsActive
@@ -6716,6 +6940,12 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 7239515687370940878, guid: 3596c5949c5c5924c921a308182dbcb0, type: 3}
       insertIndex: -1
       addedObject: {fileID: 1994669184}
+    - targetCorrespondingSourceObject: {fileID: 7239515687370940878, guid: 3596c5949c5c5924c921a308182dbcb0, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1994669190}
+    - targetCorrespondingSourceObject: {fileID: 7239515687370940878, guid: 3596c5949c5c5924c921a308182dbcb0, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1994669195}
   m_SourcePrefab: {fileID: 100100000, guid: 3596c5949c5c5924c921a308182dbcb0, type: 3}
 --- !u!1 &1994669177 stripped
 GameObject:
@@ -6737,7 +6967,7 @@ NavMeshAgent:
   m_Enabled: 1
   m_AgentTypeID: 0
   m_Radius: 0.5
-  m_Speed: 2
+  m_Speed: 15
   m_Acceleration: 8
   avoidancePriority: 50
   m_AngularSpeed: 120
@@ -6889,7 +7119,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: aa54e02951ed08a44a10e2ee911ef7ab, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PlayerController
-  playerStats: {fileID: 11400000, guid: 9afb3a66c034805419c3a05a4e0e4a8e, type: 2}
+  playerStats: {fileID: 11400000, guid: d7918bed5c894114bb2b0fdf8ba8a6f4, type: 2}
   _statManager: {fileID: 1994669183}
   _stateManager: {fileID: 1994669182}
   _skillManager: {fileID: 1994669184}
@@ -6957,6 +7187,7 @@ MonoBehaviour:
   - {fileID: 0}
   _autoCastEnabled: 1
   _logAutoCast: 1
+  _roundRobinEnabled: 0
   _statManager: {fileID: 1994669183}
   _stateManager: {fileID: 1994669182}
   _gameManager: {fileID: 1819722034}
@@ -6974,6 +7205,48 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::SkillExecutor
   _logExecution: 1
+--- !u!114 &1994669190
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1994669177}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 77b1a20952c5ff44db201f8f1a6fae8c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PlayerBotCombatInit
+  _behaviorAgent: {fileID: 1994669180}
+  _gameManager: {fileID: 1819722034}
+  _ally: {fileID: 2004071421}
+  _dangerRange: 15
+  _optimalMin: 30
+  _optimalMax: 40
+  _fleeDistance: 10
+  _flankRadius: 35
+  _strafeRadius: 35
+  _strafeAngleStep: 15
+  _minSpacing: 8
+--- !u!114 &1994669195
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1994669177}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3d62d38858e30394987b75ba0636bd38, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::TrainingSkillManager
+  _skillPool: {fileID: 11400000, guid: b7a3d1f2e4c56789ab0123456789cdef, type: 2}
+  _initialUnlockCount: 1
+  _maxUnlockCount: 3
+  _unlockInterval: 15
+  _skillManager: {fileID: 1994669184}
+  _collector: {fileID: 0}
+  _executor: {fileID: 1994669185}
 --- !u!1 &2004071421 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 7239515687370940878, guid: 3596c5949c5c5924c921a308182dbcb0, type: 3}
@@ -7122,7 +7395,7 @@ NavMeshAgent:
   m_Enabled: 1
   m_AgentTypeID: 0
   m_Radius: 0.1
-  m_Speed: 2
+  m_Speed: 15
   m_Acceleration: 8
   avoidancePriority: 50
   m_AngularSpeed: 120
@@ -7146,7 +7419,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: aa54e02951ed08a44a10e2ee911ef7ab, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PlayerController
-  playerStats: {fileID: 11400000, guid: 9afb3a66c034805419c3a05a4e0e4a8e, type: 2}
+  playerStats: {fileID: 11400000, guid: d7918bed5c894114bb2b0fdf8ba8a6f4, type: 2}
   _statManager: {fileID: 2004071435}
   _stateManager: {fileID: 2004071434}
   _skillManager: {fileID: 2004071436}
@@ -7207,13 +7480,14 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::SkillManager
   _slots:
-  - {fileID: 11400000, guid: e77be0445542b6948a4556aa5dbf54d9, type: 2}
+  - {fileID: 0}
   - {fileID: 0}
   - {fileID: 0}
   - {fileID: 0}
   - {fileID: 0}
   _autoCastEnabled: 1
   _logAutoCast: 1
+  _roundRobinEnabled: 0
   _statManager: {fileID: 2004071435}
   _stateManager: {fileID: 2004071434}
   _gameManager: {fileID: 1819722034}
@@ -7231,6 +7505,48 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::SkillExecutor
   _logExecution: 1
+--- !u!114 &2004071442
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2004071421}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 77b1a20952c5ff44db201f8f1a6fae8c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PlayerBotCombatInit
+  _behaviorAgent: {fileID: 0}
+  _gameManager: {fileID: 1819722034}
+  _ally: {fileID: 1994669177}
+  _dangerRange: 8
+  _optimalMin: 10
+  _optimalMax: 16
+  _fleeDistance: 6
+  _flankRadius: 13
+  _strafeRadius: 13
+  _strafeAngleStep: 25
+  _minSpacing: 5
+--- !u!114 &2004071447
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2004071421}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3d62d38858e30394987b75ba0636bd38, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::TrainingSkillManager
+  _skillPool: {fileID: 11400000, guid: b7a3d1f2e4c56789ab0123456789cdef, type: 2}
+  _initialUnlockCount: 1
+  _maxUnlockCount: 3
+  _unlockInterval: 15
+  _skillManager: {fileID: 2004071436}
+  _collector: {fileID: 0}
+  _executor: {fileID: 2004071437}
 --- !u!1 &2026823924
 GameObject:
   m_ObjectHideFlags: 0
@@ -7286,7 +7602,7 @@ GameObject:
   m_Component:
   - component: {fileID: 2061452137}
   m_Layer: 0
-  m_Name: BossSpawnPoint
+  m_Name: (Train) BossSpawnPoint
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -7750,12 +8066,20 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::SkillRangeDisplay
   _showRange: 1
   _logRange: 1
-  _duration: 0.4
+  _duration: 2
+  _visualScale: 2.5
   _indicatorPrefab: {fileID: 4065883679858127007, guid: 672e3aecc39b21f428111611aec07a78, type: 3}
   _poolSize: 8
-  _hitColor: {r: 1, g: 0.3, b: 0.1, a: 0.4}
-  _missColor: {r: 0.5, g: 0.5, b: 0.5, a: 0.3}
-  _projColor: {r: 0.2, g: 0.6, b: 1, a: 0.35}
+  _hitColor: {r: 1, g: 0.1, b: 0.1, a: 0.6}
+  _missColor: {r: 1, g: 1, b: 0, a: 0.5}
+  _projColor: {r: 0.2, g: 0.5, b: 1, a: 0.6}
+  _areaColor: {r: 0.8, g: 0.2, b: 1, a: 0.5}
+  _gizmoHitColor: {r: 0, g: 1, b: 0, a: 0.9}
+  _gizmoMissColor: {r: 0, g: 1, b: 1, a: 0.9}
+  _gizmoProjColor: {r: 1, g: 1, b: 0, a: 0.9}
+  _gizmoAreaColor: {r: 1, g: 0.5, b: 0, a: 0.9}
+  _showGizmos: 1
+  _gizmoSegments: 32
 --- !u!4 &2145569821
 Transform:
   m_ObjectHideFlags: 0
@@ -8841,3 +9165,4 @@ SceneRoots:
   - {fileID: 1001421247}
   - {fileID: 1727501688}
   - {fileID: 2145569821}
+  - {fileID: 204692774}

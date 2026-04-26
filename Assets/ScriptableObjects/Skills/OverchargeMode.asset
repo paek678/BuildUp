@@ -18,7 +18,7 @@ MonoBehaviour:
     +15%, \uC790\uAE30 \uBC29\uC5B4\uB825 -10%. 6\uCD08."
   Icon: {fileID: 0}
   Cooldown: 18
-  Range: 40
+  Range: 0
   TargetType: 2
   RoleTags:
   - DamageUp

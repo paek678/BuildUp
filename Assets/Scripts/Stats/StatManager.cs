@@ -617,6 +617,57 @@ public class StatManager : MonoBehaviour
     }
 
     // ══════════════════════════════════════════════════════════
+    // 학습용 전체 리셋 — 에피소드 시작 시 호출
+    // ══════════════════════════════════════════════════════════
+
+    public void ResetForTraining()
+    {
+        foreach (var kv in _statusCoroutines)
+            if (kv.Value != null) StopCoroutine(kv.Value);
+        _statusCoroutines.Clear();
+
+        foreach (var kv in _buffCoroutines)
+            if (kv.Value != null) StopCoroutine(kv.Value);
+        _buffCoroutines.Clear();
+
+        foreach (var kv in _debuffCoroutines)
+            if (kv.Value != null) StopCoroutine(kv.Value);
+        _debuffCoroutines.Clear();
+
+        if (_parryCoroutine != null)
+        {
+            StopCoroutine(_parryCoroutine);
+            _parryCoroutine = null;
+        }
+
+        if (_baseStats != null && _runtimeStats != null)
+        {
+            _runtimeStats.MoveControlMultiplier     = _baseStats.MoveControlMultiplier;
+            _runtimeStats.DamageTakenMultiplier      = _baseStats.DamageTakenMultiplier;
+            _runtimeStats.ReflectRatio               = _baseStats.ReflectRatio;
+            _runtimeStats.HealingReceivedMultiplier  = _baseStats.HealingReceivedMultiplier;
+            _runtimeStats.DamageUpMultiplier          = _baseStats.DamageUpMultiplier;
+            _runtimeStats.VulnerabilityBonus          = _baseStats.VulnerabilityBonus;
+
+            if (_baseStats is BossStatsSO bossSO)
+            {
+                _maxHP = bossSO.BossMaxHP;
+            }
+            else if (_baseStats is PlayerStatsSO playerSO)
+            {
+                _maxHP     = playerSO.MaxHP;
+                _shieldMax = playerSO.ShieldMax;
+            }
+        }
+
+        _currentHP     = _maxHP;
+        _currentShield = 0f;
+        _isAlive       = true;
+        _isCasting     = false;
+        _isParrying    = false;
+    }
+
+    // ══════════════════════════════════════════════════════════
     // 내부 유틸리티
     // ══════════════════════════════════════════════════════════
 

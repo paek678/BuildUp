@@ -18,7 +18,7 @@ MonoBehaviour:
     \uD30C\uAD34 \uCD94\uAC00\uD0C0, \uBE57\uB098\uAC00\uBA74 \uAD11\uC5ED \uC7AC\uC2DC\uB3C4."
   Icon: {fileID: 0}
   Cooldown: 6
-  Range: 40
+  Range: 24
   TargetType: 3
   RoleTags:
   - ShieldBreak

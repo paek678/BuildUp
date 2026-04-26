@@ -40,6 +40,17 @@ public class ProjectilePool : MonoBehaviour
         _available.Enqueue(projectile);
     }
 
+    public void ReturnAll()
+    {
+        for (int i = transform.childCount - 1; i >= 0; i--)
+        {
+            var child = transform.GetChild(i);
+            if (!child.gameObject.activeSelf) continue;
+            var proj = child.GetComponent<SkillProjectile>();
+            if (proj != null) Return(proj);
+        }
+    }
+
     private SkillProjectile CreateInstance()
     {
         var obj = Instantiate(_prefab, transform);

@@ -12,6 +12,11 @@ public class SkillExecutor : MonoBehaviour
     // SkillId → 마지막 사용 시각
     private readonly Dictionary<string, float> _lastUseTimes = new();
 
+    // ── 적중 기록 (BossObservationCollector 용) ─────────────────
+    private readonly Dictionary<string, int> _attemptCounts = new();
+    private readonly Dictionary<string, int> _hitCounts     = new();
+    private readonly List<string>            _skillHistory  = new();
+
     // ── 쿨타임 조회 ──────────────────────────────────────────
     public bool CanUse(SkillDefinition skill)
     {
@@ -38,6 +43,17 @@ public class SkillExecutor : MonoBehaviour
             return false;
 
         _lastUseTimes[skill.SkillId] = Time.time;
+        RecordAttempt(skill.SkillId);
+        ctx.HitRecorded = false;
+        string capturedId = skill.SkillId;
+        ctx.OnHitRecorded = () =>
+        {
+            if (!ctx.HitRecorded)
+            {
+                ctx.HitRecorded = true;
+                RecordHit(capturedId);
+            }
+        };
         skill.RuntimeStep.Invoke(ctx);
 
         if (_logExecution)
@@ -56,6 +72,55 @@ public class SkillExecutor : MonoBehaviour
     // ── 쿨타임 강제 초기화 (패링 보상, 퍼크 등) ─────────────
     public void ResetCooldown(string skillId) =>
         _lastUseTimes.Remove(skillId);
+
+    // ── 적중 기록 — 내부 ──────────────────────────────────────
+    private void RecordAttempt(string skillId)
+    {
+        _attemptCounts[skillId] = GetUseCount(skillId) + 1;
+        _skillHistory.Add(skillId);
+    }
+
+    private void RecordHit(string skillId)
+    {
+        _hitCounts.TryGetValue(skillId, out int h);
+        _hitCounts[skillId] = h + 1;
+        TotalHitCount++;
+    }
+
+    public int TotalHitCount { get; private set; }
+
+    public void ResetAll()
+    {
+        _lastUseTimes.Clear();
+        _attemptCounts.Clear();
+        _hitCounts.Clear();
+        _skillHistory.Clear();
+        TotalHitCount = 0;
+    }
+
+    // ── 적중 기록 — 외부 조회 ───────────────────────────────────
+    public float GetHitRate(string skillId)
+    {
+        int attempts = GetUseCount(skillId);
+        if (attempts == 0) return 0f;
+        _hitCounts.TryGetValue(skillId, out int hits);
+        return (float)hits / attempts;
+    }
+
+    public int GetUseCount(string skillId) =>
+        _attemptCounts.TryGetValue(skillId, out int a) ? a : 0;
+
+    public string[] GetLastNSkillIds(int count)
+    {
+        var result = new string[count];
+        int start  = Mathf.Max(0, _skillHistory.Count - count);
+        int len    = Mathf.Min(count, _skillHistory.Count);
+        for (int i = 0; i < len; i++)
+            result[count - len + i] = _skillHistory[start + i];
+        return result;
+    }
+
+    public int TotalUseCount => _skillHistory.Count;
 
     // ── 내부 ─────────────────────────────────────────────────
     private float GetLastUseTime(SkillDefinition skill) =>

@@ -18,7 +18,7 @@ MonoBehaviour:
     \uAC10\uC18C."
   Icon: {fileID: 0}
   Cooldown: 9
-  Range: 40
+  Range: 66
   TargetType: 3
   RoleTags:
   - ShieldBreak

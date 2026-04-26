@@ -17,7 +17,7 @@ MonoBehaviour:
   Description: "4\uBC29\uD5A5 \uD22C\uC0AC\uCCB4 \uD68C\uD53C \uAC15\uC81C."
   Icon: {fileID: 0}
   Cooldown: 10
-  Range: 40
+  Range: 42
   TargetType: 1
   RoleTags:
   - Silence

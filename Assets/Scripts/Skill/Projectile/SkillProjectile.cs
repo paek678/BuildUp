@@ -1,12 +1,17 @@
 using UnityEngine;
 
 // 스킬 투사체 프리팹에 붙는 컴포넌트
-// ProjectilePool에서 꺼내서 Launch → 콜라이더 이벤트 → onHit(SkillStep) 실행 → 풀 반환
+// ProjectilePool에서 꺼내서 Launch → 위치 기반 OverlapSphere 판정 → onHit(SkillStep) 실행 → 풀 반환
 [RequireComponent(typeof(Rigidbody))]
 [RequireComponent(typeof(Collider))]
 public class SkillProjectile : MonoBehaviour, IProjectile
 {
     [SerializeField] private Color _color = Color.red;
+    [SerializeField] private float _detectionRadius = 0.5f;
+    [SerializeField] private LayerMask _targetMask = -1;
+
+    private const int OverlapBufferSize = 16;
+    private static readonly Collider[] _overlapBuffer = new Collider[OverlapBufferSize];
 
     private Rigidbody   _rb;
     private Collider    _col;
@@ -19,8 +24,8 @@ public class SkillProjectile : MonoBehaviour, IProjectile
     private float       _range;
     private Vector3     _spawnPos;
     private bool        _active;
+    private readonly System.Collections.Generic.HashSet<ICombatant> _hitTargets = new();
 
-    // ── 초기화 (풀에서 한 번만 실행) ────────────────────────
     private void Awake()
     {
         _rb           = GetComponent<Rigidbody>();
@@ -30,7 +35,6 @@ public class SkillProjectile : MonoBehaviour, IProjectile
         _col.isTrigger = true;
     }
 
-    // ProjectilePool이 생성 시 주입
     public void SetPool(ProjectilePool pool) => _pool = pool;
 
     // ── IProjectile ──────────────────────────────────────────
@@ -50,32 +54,55 @@ public class SkillProjectile : MonoBehaviour, IProjectile
         _pierce = pierce;
     }
 
-    // ── 수명 체크 ────────────────────────────────────────────
-    private void Update()
+    // ── 위치 기반 판정 (FixedUpdate — 물리 틱과 동기화) ──────
+    private void FixedUpdate()
     {
         if (!_active) return;
+
         if (Vector3.Distance(_spawnPos, transform.position) >= _range)
+        {
             ReturnToPool();
+            return;
+        }
+
+        if (!ShouldRunHitDetection()) return;
+
+        int count = Physics.OverlapSphereNonAlloc(transform.position, _detectionRadius, _overlapBuffer, _targetMask);
+
+        for (int i = 0; i < count; i++)
+        {
+            var target = _overlapBuffer[i].GetComponentInParent<ICombatant>();
+            if (target == null) continue;
+            if (_ctx != null && ReferenceEquals(target, _ctx.Caster)) continue;
+            if (!_hitTargets.Add(target)) continue;
+
+            ApplyHit(target);
+
+            if (!_pierce) { ReturnToPool(); return; }
+        }
     }
 
-    // ── 충돌 이벤트 ──────────────────────────────────────────
-    private void OnTriggerEnter(Collider other)
+    // ── 권위 가드 — 서버 전환 시 이 메서드만 교체 ────────────
+    private bool ShouldRunHitDetection()
     {
-        if (!_active) return;
-        if (!other.TryGetComponent<ICombatant>(out var target)) return;
-        if (_ctx != null && ReferenceEquals(target, _ctx.Caster)) return;
+        // 현재: 클라이언트 로직이므로 항상 실행
+        // 서버 전환 시: NetworkManager.IsServer / IsHost 체크로 교체
+        return true;
+    }
 
+    // ── 적중 처리 — 서버 전환 시 RPC 발송 지점 ───────────────
+    private void ApplyHit(ICombatant target)
+    {
         if (_ctx != null)
         {
             _ctx.PrimaryTarget = target;
             _ctx.HitLanded     = true;
             _ctx.CastPosition  = transform.position;
             _ctx.RefreshSnapshot();
+            _ctx.OnHitRecorded?.Invoke();
         }
 
         _onHit?.Invoke(_ctx);
-
-        if (!_pierce) ReturnToPool();
     }
 
     // ── IPoolable ────────────────────────────────────────────
@@ -87,6 +114,7 @@ public class SkillProjectile : MonoBehaviour, IProjectile
         _ctx               = null;
         _pierce            = false;
         _rb.linearVelocity = Vector3.zero;
+        _hitTargets.Clear();
         if (_renderer != null) _renderer.material.color = _color;
     }
 
@@ -94,9 +122,9 @@ public class SkillProjectile : MonoBehaviour, IProjectile
     {
         _active            = false;
         _rb.linearVelocity = Vector3.zero;
+        _hitTargets.Clear();
     }
 
-    // ── 풀 반환 ──────────────────────────────────────────────
     private void ReturnToPool()
     {
         _active = false;

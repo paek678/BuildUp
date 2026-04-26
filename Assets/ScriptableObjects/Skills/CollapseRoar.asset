@@ -19,7 +19,7 @@ MonoBehaviour:
     \uAD11\uC5ED."
   Icon: {fileID: 0}
   Cooldown: 10
-  Range: 40
+  Range: 27
   TargetType: 1
   RoleTags:
   - AOE

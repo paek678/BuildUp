@@ -19,7 +19,7 @@ MonoBehaviour:
     \uBC94\uC704 \uC7AC\uC2DC\uB3C4."
   Icon: {fileID: 0}
   Cooldown: 8
-  Range: 40
+  Range: 24
   TargetType: 3
   RoleTags:
   - Burst

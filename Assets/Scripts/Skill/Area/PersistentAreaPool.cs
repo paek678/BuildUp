@@ -30,6 +30,17 @@ public class PersistentAreaPool : MonoBehaviour
         _available.Enqueue(area);
     }
 
+    public void ReturnAll()
+    {
+        for (int i = transform.childCount - 1; i >= 0; i--)
+        {
+            var child = transform.GetChild(i);
+            if (!child.gameObject.activeSelf) continue;
+            var area = child.GetComponent<SkillArea>();
+            if (area != null) Return(area);
+        }
+    }
+
     private SkillArea CreateInstance()
     {
         var obj = Instantiate(_prefab, transform);

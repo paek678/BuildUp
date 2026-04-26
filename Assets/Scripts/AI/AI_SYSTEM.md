@@ -10,8 +10,19 @@
 ```
 Assets/Scripts/AI/
 ├── BossAI/
-│   ├── BossAgent.cs          ← ML-Agents PPO 학습 에이전트
-│   └── BasicMove.onnx        ← 학습 완료 모델 (2M 스텝)
+│   ├── Agents/                        ← Phase별 ML-Agent + 학습 모델
+│   │   ├── BossAgent.cs               ← Phase 1 (6 obs, 4 actions)
+│   │   ├── DualTargetAgent.cs         ← Phase 2 (11 obs, 4 actions)
+│   │   ├── SkillIntroAgent.cs         ← Phase 3 (24 obs, 2 Branch: 이동4+스킬4)
+│   │   └── BasicMove.onnx             ← Phase 1 학습 완료 모델 (2M 스텝)
+│   │
+│   ├── Observation/                   ← 관측/편향/가중치 (에이전트가 참조)
+│   │   ├── BossObservationCollector.cs ← Phase 3+ 관측값 중앙 수집 (34개)
+│   │   ├── PlayerBiasTracker.cs        ← 9종 플레이어 편향 점수 추적
+│   │   └── BossActionWeightCalculator.cs ← 9종 보스 행동 가중치 계산
+│   │
+│   └── Training/                      ← 학습 전용 유틸
+│       └── TrainingSkillManager.cs     ← Phase 3 점진적 스킬 해금
 │
 └── Player/
     ├── basicMove/             ← 1인용 기본 행동 그래프 (완성)
@@ -1087,3 +1098,466 @@ tensorboard --logdir results
 1. `results/학습이름/모델이름.onnx` 파일을 프로젝트에 복사
 2. BossAgent 오브젝트의 `BehaviorParameters` → `Model` 필드에 할당
 3. `Behavior Type`을 `Inference Only`로 변경
+
+---
+
+## 6. 전투 봇 AI — 스킬 + 포지셔닝 통합
+
+### 6-1. 개요
+
+기존 DoubleMove(2인 협동 이동) 위에 **스킬 자동 시전**을 통합하는 전투 봇 시스템.
+3가지 독립 시스템이 협력하여 동작한다:
+
+```
+[BehaviorGraph + DoubleMove.asset]  ← 포지셔닝 (기존 그래프 재사용)
+         ↓ NavMeshAgent.destination
+[LookAtBossAction]                   ← 보스 방향 회전 (그래프 액션)
+         ↓ transform.rotation
+[SkillManager auto-cast]             ← 스킬 시전 (기존 코드)
+         ↓ transform.forward = CastDirection
+```
+
+- BehaviorGraph: DoubleMove.asset 그대로 사용, Blackboard 값만 다르게 주입
+- 그래프 내부 수정: LookAtBossAction 노드를 각 분기 끝에 추가
+- SkillManager: 코드 수정 없음, 슬롯만 SkillDistributor가 배치
+
+### 6-2. 신규 컴포넌트
+
+#### PlayerBotCombatInit.cs
+
+| 항목 | 내용 |
+|------|------|
+| 위치 | `Assets/Scripts/AI/Player/Combat/` |
+| 역할 | 전투 봇 Blackboard 전체 주입 + BehaviorGraphAgent 시작 제어 |
+| 실행 | Awake: 에이전트 비활성화 / Start: Blackboard 주입 → 에이전트 활성화 |
+
+**주입하는 Blackboard 변수:**
+
+| 변수 | 타입 | 용도 |
+|------|------|------|
+| Boss | GameObject | 위치 계산 기준 |
+| Agent | NavMeshAgent | SetNavDestination |
+| Ally | GameObject | 협동 판단 |
+| Self | GameObject | 자기 위치 참조 |
+| DangerRange ~ MinSpacing | float × 8 | 포지셔닝 파라미터 |
+
+#### SkillDistributor.cs
+
+| 항목 | 내용 |
+|------|------|
+| 위치 | `Assets/Scripts/Skill/Core/` |
+| 역할 | P1/P2 플레이어에게 스킬 슬롯 분배 |
+| 범위 | 플레이어 전용 (보스는 SkillManager 일반화 후 별도) |
+
+#### LookAtBossAction.cs
+
+| 항목 | 내용 |
+|------|------|
+| 위치 | `Assets/Scripts/AI/Player/DoubleMove/` |
+| 역할 | 이동 후 보스 방향으로 Slerp 회전 |
+| 배치 | 5개 분기 각각의 SetNavDestination 뒤 |
+
+### 6-3. P1/P2 Blackboard 값
+
+| 변수 | P1 근거리 | P2 원거리 |
+|------|:---------:|:---------:|
+| DangerRange | 8.0 | 15.0 |
+| OptimalMin | 10.0 | 30.0 |
+| OptimalMax | 16.0 | 40.0 |
+| FleeDistance | 6.0 | 10.0 |
+| FlankRadius | 13.0 | 35.0 |
+| StrafeRadius | 13.0 | 35.0 |
+| StrafeAngleStep | 25.0 | 15.0 |
+| MinSpacing | 5.0 | 8.0 |
+
+### 6-4. P1/P2 스킬 슬롯 (SkillDistributor 배치)
+
+**P1 근거리:**
+
+| 슬롯 | 스킬 | SO Range | 사유 |
+|------|------|:--------:|------|
+| 0 | CollapseRoar | 27 | AOE + DefDown 최우선 |
+| 1 | FortressArmor | 24 | 실드 획득 생존 |
+| 2 | ExecutionSpike | 24 | 저체력 마무리 |
+
+**P2 원거리:**
+
+| 슬롯 | 스킬 | SO Range | 사유 |
+|------|------|:--------:|------|
+| 0 | SealChain | 66 | 경직+침묵 방해 최우선 |
+| 1 | ErosionField | 42 | 지속 피해 견제 |
+| 2 | PiercingShot | 66 | 고피해 저격 |
+
+### 6-5. 실행 순서
+
+```
+SkillBootstrap.Awake()       → RuntimeStep 바인딩
+PlayerBotCombatInit.Awake()  → BehaviorGraphAgent 비활성화
+──── 모든 Awake 완료 ────
+SkillDistributor.Start()     → P1/P2 스킬 슬롯 분배
+PlayerBotCombatInit.Start()  → Blackboard 주입 + 에이전트 활성화
+```
+
+### 6-6. 전투 봇 오브젝트 컴포넌트
+
+```
+PlayerBot (전투용)
+├── NavMeshAgent
+├── BehaviorGraphAgent          ← Graph: DoubleMove.asset
+├── PlayerController
+├── StatManager
+├── StateManager
+├── SkillExecutor
+├── SkillManager                ← SkillDistributor가 슬롯 배치
+└── PlayerBotCombatInit         ← Blackboard 값 주입
+    ├── Ally: [상대 봇]
+    ├── DangerRange ~ MinSpacing: P1/P2별 값
+    └── GameManager: [GameManager 참조]
+```
+
+**주의:**
+- `PlayerBotBlackboardInit`은 전투 봇에 **붙이지 않음** (CombatInit이 대체)
+- `FaceTarget`은 **생성하지 않음** (LookAtBossAction이 대체)
+- 단일 보스(Chapter 1) 전제
+
+### 6-7. DoubleMove 그래프 수정 (에디터 수동)
+
+각 분기의 SetNavDestination 뒤에 LookAtBossAction 추가:
+
+```
+ConditionalGuard → Sequence
+                     ├── Calc~Position
+                     ├── SetNavDestination
+                     └── LookAtBossAction  ← 추가 (5개 분기 모두)
+```
+
+---
+
+## 7. 보스 관측값 시스템
+
+### 7-1. 개요
+
+Phase 3+ ML-Agent 학습과 규칙 기반 보스 행동 선택을 위한 3개 시스템:
+
+```
+게임 상태 (위치, HP, 스킬, 이벤트)
+    │
+    ├── BossObservationCollector → VectorSensor (ML-Agent 학습용, 34개)
+    │
+    └── PlayerBiasTracker (15~20초 행동 로그)
+            │
+            └── BossActionWeightCalculator → weighted-random 행동 선택
+```
+
+### 7-2. Phase별 관측값 (34개, P1/P2 고정 정렬)
+
+Phase 3+는 Phase 2(active/secondary 동적 정렬)와 의도적으로 단절됨.
+Phase 2→3 initialize-from 사용하지 않음.
+
+| Phase | # | 관측값 | 정규화 | 비고 |
+|:---:|:---:|--------|:---:|------|
+| 1 | 0-1 | dirToP1.x/z | -1~1 | P1 방향 |
+| 1 | 2 | distToP1 | 0~1 | P1 거리 |
+| 1 | 3-4 | forward.x/z | -1~1 | 보스 전방 |
+| 1 | 5 | dotForwardP1 | -1~1 | 전방↔P1 정렬도 |
+| 2 | 6-7 | dirToP2.x/z | -1~1 | P2 방향 |
+| 2 | 8 | distToP2 | 0~1 | P2 거리 |
+| 2 | 9 | distP1P2 | 0~1 | P1↔P2 거리 |
+| 2 | 10 | dotForwardP2 | -1~1 | 전방↔P2 정렬도 |
+| 3 | 11-13 | bossHp/p1Hp/p2Hp | 0~1 | HP 비율 3종 |
+| 3 | 14-16 | skill0~2Cooldown | 0~1 | 보스 스킬 쿨다운 비율 |
+| 3 | 17 | bossPhase | 0~1 | 보스 페이즈 (정규화) |
+| 3 | 18 | unlockedSlotCount | 0~1 | 해금된 스킬 슬롯 수 (÷ maxSlots) |
+| 4 | 19 | recentParryCount | 0~1 | 패링 시스템 미구현 → 0 고정 |
+| 4 | 20 | recentBurstDamage | 0~1 | 최근 1초 수신 피해량 |
+| 4 | 21-22 | p1/p2AvgMoveSpeed | 0~1 | P1/P2 평균 이동속도 |
+| 4 | 23-24 | p1/p2IsCasting | 0/1 | P1/P2 캐스팅 여부 |
+| 5 | 25-27 | lastSkill[0~2] | 0~1 | 직전 3회 스킬 슬롯 인덱스 |
+| 5 | 28-30 | skillHitRate[0~2] | 0~1 | 스킬별 명중률 |
+| 5 | 31-33 | skillUseCount[0~2] | 0~1 | 스킬별 사용 비율 |
+
+Space Size: Phase 3=19, Phase 4=25, Phase 5=34
+
+### 7-3. 플레이어 편향 점수 (PlayerBiasTracker)
+
+| # | 편향 | 상승 기준 | 하락 기준 | 비고 |
+|:---:|------|----------|----------|------|
+| 0 | 근접 선호 | 평균 거리 짧음 +0.02/+0.05 | 거리 길면 -0.02 | |
+| 1 | 원거리 유지 | 원거리 체류 높음 +0.02/+0.05 | 근접 시 -0.02 | |
+| 2 | 공격 집중 | 공격 비율 높음 +0.02/+0.05 | 회피 위주면 -0.02 | |
+| 3 | 생존 우선 | 이탈/회복 많음 +0.02/+0.05 | 공격 지속 시 -0.02 | |
+| 4 | 패링 의존 | — | — | 미구현, 0 고정 |
+| 5 | 로프 기동 | — | — | 미구현, 0 고정 |
+| 6 | 스킬 중심 | 스킬 비중 높음 +0.02/+0.05 | 기본 공격 위주면 -0.02 | |
+| 7 | 팀 밀착 | 팀원 가까움 +0.02/+0.05 | 멀어지면 -0.02 | |
+| 8 | 팀 분산 | 팀원 멀음 +0.02/+0.05 | 가까워지면 -0.02 | |
+
+시간축: 15~20초 장기 로그 + 0.5초 재계산 + 이벤트 트리거(즉시 반영)
+
+### 7-4. 보스 행동 가중치 (BossActionWeightCalculator)
+
+| # | 행동군 | 계산식 |
+|:---:|--------|--------|
+| 0 | 근접 압박 | 1.0 + 근접선호×0.6 + 팀밀착×0.3 - 원거리유지×0.4 |
+| 1 | 원거리 견제 | 1.0 + 원거리유지×0.6 + 팀분산×0.3 - 근접선호×0.4 |
+| 2 | 패링 견제 | 1.0 + 패링의존×0.7 |
+| 3 | 로프 대응 | 1.0 + 로프기동×0.7 |
+| 4 | 폭딜 대응 | 1.0 + 공격집중×0.5 |
+| 5 | 생존 압박 | 1.0 + 생존우선×0.6 |
+| 6 | 분산 대응 | 1.0 + 팀분산×0.8 |
+| 7 | 밀집 대응 | 1.0 + 팀밀착×0.8 |
+| 8 | 적응형 변칙 | 1.0 (게이트 없음) |
+
+선택 흐름:
+1. 비적합 게이트: 관련 편향 < 0.05 → 가중치 0
+2. Legal mask: 미구현/페이즈 잠금 행동 차단
+3. 반복 패널티: 직전 동일 -0.2, 3회 중 2회 -0.35, 직전 2회 동일 -0.15
+4. 바닥값: 적합 행동 최소 0.1
+5. Fallback: Σ=0 → legal 행동만 균등 분배
+6. Weighted-random: P(i) = weight_i / Σweights
+
+### 7-5. 적중 기록 흐름 (SkillExecutor)
+
+```
+SkillExecutor.Execute()
+  ├── RecordAttempt(skillId)         ← 시도 1회 기록
+  ├── ctx.HitRecorded = false
+  ├── ctx.OnHitRecorded = callback   ← dedupe 콜백 주입
+  └── RuntimeStep.Invoke(ctx)
+        ├── ApplyInArea: anyHit → OnHitRecorded()
+        ├── DealDirectionalHit: anyHit → OnHitRecorded()
+        └── LaunchProjectile → SkillProjectile.ApplyHit → OnHitRecorded()
+                                (관통 투사체도 시전당 1회만 기록)
+```
+
+### 7-6. 컴포넌트 구성 (보스 GameObject)
+
+```
+Boss
+├── BossController
+├── StatManager
+├── StateManager
+├── SkillExecutor
+├── NavMeshAgent
+├── BossObservationCollector      ← 신규
+│   ├── _p1/_p2: [플레이어 참조]
+│   ├── _bossSkills[3]: [스킬 SO]
+│   └── _skillExecutor: [자동 GetComponent]
+├── PlayerBiasTracker             ← 신규
+│   └── _collector: [자동 GetComponent]
+└── BossActionWeightCalculator    ← 신규
+    ├── _biasTracker: [자동 GetComponent]
+    └── _bossController: [자동 GetComponent]
+```
+
+---
+
+## 8. Phase 3 — SkillIntroAgent (원거리 스킬 대응)
+
+### 8-1. 개요
+
+Phase 2(DualTarget)에서 학습한 이동 능력 위에 **스킬 시전** 행동을 추가.
+원거리 스킬을 사용하는 플레이어를 상대로 보스가 이동 + 스킬 조합을 학습한다.
+
+네트워크 구조(24 obs, 2 Branch)를 유지한 채 이동 프리트레인 → 스킬 학습 2단계로 진행.
+DualTarget(11 obs, 1 Branch)과 구조가 달라 직접 initialize-from 불가 → SkillIntro 구조 내에서 이동 전용 프리트레인.
+
+**더블 터치 시스템:** DualTargetAgent의 검증된 교대 접근 로직을 통합.
+P1 접촉 → P2 추적, P2 접촉 → P1 추적, 양쪽 접촉 → 에피소드 성공.
+한 타겟에 붙어있는 캠핑 행동을 방지하고 두 플레이어를 번갈아 접근하는 행동을 학습.
+
+### 8-2. 파일 구성
+
+| 파일 | 역할 |
+|------|------|
+| `SkillIntroAgent.cs` | Phase 3 ML-Agent (24 obs, 2 Branch, 더블터치) |
+| `TrainingSkillManager.cs` | 점진적 스킬 해금 관리 (_initialUnlockCount로 시작 슬롯 지정) |
+| `SkillPoolSO.cs` | 스킬 풀 SO (Inspector 배치) |
+| `SkillIntro_Move_config.yaml` | 이동 프리트레인 config (0슬롯, B1 전체마스크) |
+| `SkillIntro_config.yaml` | 스킬 학습 config (initialize-from: SkillIntro_Move) |
+
+### 8-3. 관측값 (24개 — Phase3Size 22 + touch 2)
+
+BossObservationCollector.CollectUpToPhase3() 22개 + 더블터치 상태 2개.
+Phase 1(#0-5) + Phase 2(#6-10) + Phase 3(#11-21) + Touch(#22-23) 누적.
+
+| # | 관측값 | 설명 |
+|:---:|--------|------|
+| 0-5 | P1 방향/거리/전방/정렬도 | Phase 1 |
+| 6-10 | P2 방향/거리/P1↔P2거리/정렬도 | Phase 2 |
+| 11-13 | bossHp/p1Hp/p2Hp | HP 비율 |
+| 14-16 | skill0~2Cooldown | 스킬 쿨다운 비율 |
+| 17 | bossPhase | 페이즈 정규화 |
+| 18 | unlockedSlotCount | 해금 슬롯 수 / maxSlots |
+| 19-21 | skill0~2Range | 스킬 사거리 (Clamp01, maxDistance 정규화) |
+| 22 | p1Touched | P1 접촉 여부 (0/1) |
+| 23 | p2Touched | P2 접촉 여부 (0/1) |
+
+BehaviorParameters: `Vector Observation Size: 24`
+
+### 8-4. 행동 (2 Branch)
+
+| Branch | Size | 값 | 행동 |
+|:---:|:---:|:---:|------|
+| B0 (이동) | 4 | 0 | 대기 |
+| | | 1 | 전진 (`transform.forward * moveSpeed * dt`) |
+| | | 2 | 좌회전 (`Rotate(0, -rotSpeed * dt, 0)`) |
+| | | 3 | 우회전 (`Rotate(0, +rotSpeed * dt, 0)`) |
+| B1 (스킬) | 4 | 0 | 없음 |
+| | | 1 | 슬롯 0 시전 |
+| | | 2 | 슬롯 1 시전 |
+| | | 3 | 슬롯 2 시전 |
+
+BehaviorParameters: `Discrete Branches: 2, Branch 0 Size: 4, Branch 1 Size: 4`
+
+**Action Masking:** 미해금 슬롯 + 쿨다운 중 슬롯 → B1 해당 action disabled
+
+### 8-5. 보상
+
+| 조건 | 보상 | 설명 |
+|------|:---:|------|
+| 매 스텝 | -0.001 | 시간 압박 |
+| **P1/P2 터치** | +0.2 | 근접 반경(_proximityRadius=5) 진입 시 |
+| **빠른 더블터치** | +0.3 | 양쪽 터치 간격 ≤ _doubleTouchWindow(3초) |
+| **양쪽 터치 완료** | EndEpisode | _touchEndEnabled=true 시 성공 종료 |
+| 스킬 시전 (범위 내) | +0.05 | 시전 자체 소보상 |
+| 범위 밖 시전 | -0.1 | TargetType.Self 제외 |
+| HP 감소 | delta × 0.5 | 주 보상 (P1+P2 HP% 추적) |
+| Shield 감소 | delta × 0.3 | 보조 (shieldMax 정규화) |
+| 적중 (HitCount) | +0.2 / hit | 보조 (TotalHitCount delta) |
+| 타겟 접근 | delta × 0.3 | **ActiveTarget 기준** (터치 안 한 쪽) |
+| 타겟 정렬 | +0.003 | dot > 0.7 시 (ActiveTarget 기준) |
+| 정지 | -0.005 | 위치 변화 < 0.05 |
+| 벽 충돌 진입 | -_wWallHitPenalty (0.05) | Inspector 조정 가능 |
+| 벽 충돌 유지 | -_wWallStayPenalty × dt (0.01) | Inspector 조정 가능 |
+| 맵 이탈 | -1.0 | Y < -5 |
+| 시간 종료 (터치 0개) | -0.5 (_noTouchPenalty) | 60초 초과, 아무도 못 건듦 |
+| 시간 종료 (터치 1개) | -0.2 (_partialTouchPenalty) | 60초 초과, 한 쪽만 건듦 |
+
+### 8-6. 점진적 스킬 해금 (TrainingSkillManager)
+
+```
+에피소드 시작 → _initialUnlockCount만큼 해금 (Inspector에서 0~3 설정)
+  └── _unlockInterval초 후 → +1 해금
+       └── _unlockInterval초 후 → +1 해금 (최대 3)
+```
+
+- `_initialUnlockCount = 0`: 이동 프리트레인 (B1 전체마스크, 스킬 없음)
+- `_initialUnlockCount = 1`: 기본값 (기존 동작, 1개로 시작)
+- `_initialUnlockCount = 3`: 풀 스킬 고정 (점진 해금 없음)
+
+SkillPoolSO에서 순서대로 스킬을 꺼내 SkillManager.SetSlot()으로 배치.
+BossObservationCollector에 SetUnlockedSlotCount() + SetBossSkill()로 동기화.
+
+### 8-7. BossController 학습 모드
+
+```
+BossController.TrainingMode = true
+  ├── NavMeshAgent.enabled = false (컴포넌트 자체 비활성)
+  ├── HandleActions() 스킵 (레거시 이펙트 공격 비활성)
+  ├── HandlePhase() 유지 (페이즈 전환 관측 필요)
+  ├── StatManager.SetCasting(false) + EndParryWindow()
+  └── StateManager.ForceReset()
+```
+
+**중요:** NavMeshAgent는 `enabled = false`로 완전 비활성해야 함.
+`updatePosition = false`만 하면 여전히 transform.position 직접 변경을 간섭함.
+
+### 8-8. 에피소드 흐름
+
+```
+OnEpisodeBegin()
+  ├── CleanupPreviousEpisode()
+  │     ├── ProjectilePool.ReturnAll()  — 이전 에피소드 투사체 정리
+  │     └── PersistentAreaPool.ReturnAll() — 이전 에피소드 장판 정리
+  ├── SpawnObjects()
+  │     ├── 보스 → _bossSpawnPoint 위치 리셋
+  │     └── P1/P2 → 랜덤 스폰 (NavMeshAgent Warp)
+  └── ResetEpisodeState()
+        ├── StatManager.SetCasting(false) + EndParryWindow()
+        ├── StateManager.ForceReset()
+        ├── SkillExecutor.ResetAll() — 쿨다운+통계 전체 초기화
+        ├── TrainingSkillManager.ResetForEpisode() → _initialUnlockCount만큼 해금
+        └── HP/Shield/HitCount 추적 변수 초기화
+
+매 스텝:
+  TrainingSkillManager.Tick() → 해금 시간 확인
+  OnActionReceived()
+    ├── B0: 이동 (전진/좌회전/우회전)
+    ├── NotifyMovementInput(moveAction==1)
+    ├── B1: 스킬 시전 (Action Masking + Range 체크, ActiveTarget 기준)
+    ├── ApplyStepRewards()
+    │     ├── HP/Shield/HitCount 3중 보상
+    │     ├── CheckProximityTouch() — P1/P2 근접 터치 판정
+    │     └── ActiveTarget 기준 진행/정렬 보상
+    └── CheckTermination()
+
+종료 조건:
+  ├── 더블 터치 (P1+P2 모두 접촉) → 성공 종료 (+빠른 보너스)
+  ├── 맵 이탈 (Y < -5) → -1.0, EndEpisode()
+  ├── 시간 초과 (60초, 터치 0개) → -0.5, EndEpisode()
+  ├── 시간 초과 (60초, 터치 1개) → -0.2, EndEpisode()
+  └── MaxStep 도달 → 자동 종료
+```
+
+### 8-9. 학습 파이프라인
+
+```
+① 이동 프리트레인 (SkillIntro_Move_config.yaml)
+   Inspector: _initialUnlockCount = 0
+   결과: 22obs/2branch 구조에서 이동만 학습 (B1 전체마스크)
+
+② 스킬 학습 (SkillIntro_config.yaml, initialize-from: SkillIntro_Move)
+   Inspector: _initialUnlockCount = 1, _unlockInterval = 15
+   결과: 이동 가중치 유지 + 스킬 시전 학습
+```
+
+**학습 명령:**
+```bash
+# Step 1: 이동 프리트레인
+mlagents-learn SkillIntro_Move_config.yaml --run-id=SkillIntro_Move
+
+# Step 2: 스킬 학습 (이동 체크포인트에서 이어받기)
+mlagents-learn SkillIntro_config.yaml --run-id=SkillIntro --initialize-from=SkillIntro_Move
+```
+
+**인스펙터 튜닝 시나리오:**
+
+| 시나리오 | _initialUnlockCount | _unlockInterval | 목적 |
+|:---:|:---:|:---:|------|
+| 이동 전용 | 0 | — | 프리트레인 |
+| 1스킬 고정 | 1 | 999 | 단일 스킬 집중 |
+| 3스킬 고정 | 3 | 999 | 풀 스킬 즉시 |
+| 점진 해금 | 1 | 15 | 실전 (기본값) |
+
+### 8-10. 게임 오브젝트 구성
+
+```
+Boss (학습 환경)
+├── BossController          ← TrainingMode = true (Inspector)
+├── StatManager
+├── StateManager
+├── SkillExecutor
+├── SkillManager            ← AutoCast = false, RoundRobin = true
+├── NavMeshAgent            ← enabled = false (학습 모드 시 자동)
+├── BossObservationCollector
+├── SkillIntroAgent         ← Behavior Name: SkillIntro
+│   ├── _bossSpawnPoint
+│   ├── _p1Object / _p2Object
+│   └── _playerSpawnPoints[]
+└── TrainingSkillManager
+    ├── _skillPool: [SkillPoolSO 에셋]
+    ├── _initialUnlockCount: 0 (이동) / 1 (스킬, 기본값)
+    └── _unlockInterval: 15
+```
+
+### 8-11. 휴리스틱
+
+| 키 | 행동 |
+|:---:|------|
+| W | 전진 (B0=1) |
+| A | 좌회전 (B0=2) |
+| D | 우회전 (B0=3) |
+| 1 | 슬롯 0 시전 (B1=1) |
+| 2 | 슬롯 1 시전 (B1=2) |
+| 3 | 슬롯 2 시전 (B1=3) |

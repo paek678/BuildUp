@@ -18,7 +18,7 @@ MonoBehaviour:
     \uC7A5\uD310 \uC0DD\uC131. \uC9C0\uC18D \uD53C\uD574 + \uCE58\uC720 \uAC10\uC18C."
   Icon: {fileID: 0}
   Cooldown: 10
-  Range: 40
+  Range: 42
   TargetType: 0
   RoleTags:
   - DOT

@@ -1,0 +1,23 @@
+=== EPISODE RESULTS ===
+  EP#224: 보스 사망 (39.0s)
+
+P1 deaths: 1, P2 deaths: 0
+
+Boss -> Player total damage: 264
+Player -> Boss total damage: 2276
+
+=== BOSS SKILL USAGE ===
+  보스: 33x | HIT:5 MISS:31 | rate:14%
+
+=== P1 SKILL USAGE ===
+  CollapseRoar: 4x
+  BarrierBreaker: 3x
+  ExecutionSpike: 2x
+  CrushingBarrage: 2x
+  RuptureMagazine: 1x
+
+=== P2 SKILL USAGE ===
+  SealChain: 15x
+  CollapseRoar: 7x
+  FortressArmor: 3x
+  RuptureMagazine: 1x

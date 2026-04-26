@@ -17,7 +17,7 @@ MonoBehaviour:
   Description: "8\uBC29\uD5A5 \uD3ED\uBC1C \uD328\uD134."
   Icon: {fileID: 0}
   Cooldown: 9
-  Range: 40
+  Range: 42
   TargetType: 1
   RoleTags:
   - Vulnerable

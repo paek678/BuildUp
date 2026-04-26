@@ -34,6 +34,9 @@ public class BossController : MonoBehaviour, ICombatant
     [Header("이펙트 프리팹")]
     public GameObject effectPrefab;
 
+    [Header("ML-Agent 학습")]
+    [SerializeField] private bool _trainingMode = false;
+
     private int          currentPhase = 0;
     private NavMeshAgent agent;
     private bool         isAttacking  = false;
@@ -41,6 +44,23 @@ public class BossController : MonoBehaviour, ICombatant
     // ── 외부 접근 ────────────────────────────────────────────
     public StatManager  StatMgr  => _statManager;
     public StateManager StateMgr => _stateManager;
+    public int          CurrentPhase => currentPhase;
+
+    public bool TrainingMode
+    {
+        get => _trainingMode;
+        set
+        {
+            _trainingMode = value;
+            ApplyTrainingModeToAgent();
+            if (_trainingMode)
+            {
+                _statManager?.SetCasting(false);
+                _statManager?.EndParryWindow();
+                _stateManager?.ForceReset();
+            }
+        }
+    }
 
     // ── ICombatant 프로퍼티 ──────────────────────────────────
     Transform  ICombatant.Transform   => transform;
@@ -86,24 +106,48 @@ public class BossController : MonoBehaviour, ICombatant
             _stateManager.BindOwner(this);
 
         agent.speed = bossStats.MoveControlMultiplier * 3f;
+
+        if (_trainingMode)
+            ApplyTrainingModeToAgent();
+    }
+
+    private void ApplyTrainingModeToAgent()
+    {
+        if (agent == null) return;
+        if (_trainingMode)
+        {
+            agent.enabled = false;
+        }
+        else
+        {
+            agent.enabled        = true;
+            agent.updatePosition = true;
+            agent.updateRotation = true;
+            agent.isStopped      = false;
+        }
     }
 
     void Update()
     {
         if (_statManager != null) _statManager.Tick(Time.deltaTime);
         HandlePhase();
-        HandleActions();
 
-        if (_stateManager != null)
+        if (!_trainingMode)
         {
-            // NavAgent velocity 로 이동 중 여부 판정
-            bool isMoving = agent != null && agent.velocity.sqrMagnitude > 0.01f;
-            _stateManager.NotifyMovementInput(isMoving);
+            HandleActions();
 
-            // 이동 차단 — 제어 상태 시 NavAgent 정지
-            agent.isStopped = !_stateManager.CanMove;
-
-            _stateManager.Tick(Time.deltaTime);
+            if (_stateManager != null)
+            {
+                bool isMoving = agent != null && agent.velocity.sqrMagnitude > 0.01f;
+                _stateManager.NotifyMovementInput(isMoving);
+                agent.isStopped = !_stateManager.CanMove;
+                _stateManager.Tick(Time.deltaTime);
+            }
+        }
+        else
+        {
+            if (_stateManager != null)
+                _stateManager.Tick(Time.deltaTime);
         }
     }
 
@@ -144,7 +188,7 @@ public class BossController : MonoBehaviour, ICombatant
             StartCoroutine(EffectAttackRoutine());
     }
 
-    private Transform FindNearestPlayer()
+    public Transform FindNearestPlayer()
     {
         if (_gameManager == null) return null;
 

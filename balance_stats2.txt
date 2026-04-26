@@ -1,0 +1,32 @@
+=== EPISODE RESULTS ===
+  EP#224: 보스 사망 (39.0s)
+
+Total logs analyzed: 297
+P1 deaths: 2, P2 deaths: 0, Boss deaths: 3
+Boss -> Player dmg: 264
+Player -> Boss dmg: 2276
+
+=== BOSS SKILL USAGE (total) ===
+Total: HIT=5, MISS=31, rate=14%
+
+  FortressArmor_Boss: 17x | HIT:1 MISS:17 | rate:6%
+  CollapseRoar_Boss: 15x | HIT:4 MISS:14 | rate:22%
+  SurvivalPulse_Boss: 1x | HIT:0 MISS:0 | rate:N/A(proj/area)
+
+=== P1 SKILL USAGE ===
+  CollapseRoar: 4x
+  BarrierBreaker: 3x
+  ExecutionSpike: 2x
+  CrushingBarrage: 2x
+  RuptureMagazine: 1x
+
+=== P2 SKILL USAGE ===
+  SealChain: 15x
+  CollapseRoar: 7x
+  FortressArmor: 3x
+  RuptureMagazine: 1x
+
+=== BOSS DAMAGE BREAKDOWN (from combat logs) ===
+  Boss hit: 88 dmg
+  Boss hit: 88 dmg
+  Boss hit: 88 dmg

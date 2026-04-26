@@ -5,6 +5,325 @@
 
 ---
 
+## 죽은 플레이어 타격 방지 보상 구조 수정
+**경로:** `Assets/Scripts/AI/BossAI/Agents/SkillIntroAgent.cs`
+**변경일:** 2026-04-26
+
+### 변경 사유
+- 보스가 이미 죽은(Frozen) 플레이어를 계속 타겟팅/타격하면서 의미 없는 보상을 수집
+- 접근/정렬 보상(progress/align)이 죽은 플레이어 방향으로도 발생
+- 학습 효율 저하 — 보스가 죽은 플레이어에게 시간 낭비
+
+### 변경 내용
+- **GetActiveTarget()** — 죽은 플레이어를 타겟 후보에서 완전 제외, 살아있는 플레이어만 반환
+- **TryExecuteSkill()** — 살아있는 타겟이 없을 때 스킬 사용 차단 + `_hitDeadPlayerPenalty`(0.3) 페널티 부여
+- **_hitDeadPlayerPenalty** 필드 추가 (Inspector에서 실시간 조정 가능)
+
+---
+
+## 스킬 풀 분리 — 보스/플레이어 별도 스킬 풀
+**경로:** `Assets/ScriptableObjects/Skills/PlayerTrainingSkillPool.asset` (신규)
+**수정:** `Assets/Scenes/Chapter1.unity`
+**변경일:** 2026-04-26
+
+### 변경 사유
+- 보스와 플레이어가 같은 _Boss 스킬풀을 공유하고 있어 밸런스 붕괴 (보스가 매 에피소드 사망)
+- BarrierBreaker_Boss의 실드파괴 보너스(195 dmg/hit)를 플레이어가 그대로 사용
+
+### 변경 내용
+- **PlayerTrainingSkillPool.asset** 신규 생성 — 플레이어 버전 스킬 12종 (BarrierBreaker, CollapseRoar, CrushingBarrage, ErosionField, ExecutionSpike, FortressArmor, HuntingMark, OverchargeMode, PiercingShot, RuptureMagazine, SealChain, SurvivalPulse)
+- **Chapter1.unity** — P1/P2 TrainingSkillManager._skillPool을 PlayerTrainingSkillPool로 변경
+- 보스 TrainingSkillManager는 기존 TrainingCombatSkillPool(_Boss 스킬 11종) 유지
+
+---
+
+## Phase 3 SkillIntroAgent — 원거리 스킬 대응 보스 학습 에이전트
+**경로:** `Assets/Scripts/AI/BossAI/Agents/SkillIntroAgent.cs`, `Assets/Scripts/AI/BossAI/Training/TrainingSkillManager.cs`, `Assets/Scripts/Skill/Core/SkillPoolSO.cs`
+**보완:** `BossController.cs`, `BossObservationCollector.cs`, `SkillManager.cs`
+**변경일:** 2026-04-24
+
+### 신규
+- **SkillIntroAgent.cs** — Phase 3 ML-Agent (19 obs, 2 Branch: 이동 4 + 스킬 4)
+  - 전진/좌회전/우회전 이동 (Phase 1/2 동일)
+  - 스킬 시전: B1 = 없음/슬롯0/1/2, Action Masking으로 미해금+쿨다운 차단
+  - 보상: 시간 압박, 스킬 적중, 진행(거리 감소), 정렬(dot), 정지 패널티
+  - 에피소드 경계: StatManager.SetCasting(false) + EndParryWindow() + StateManager.ForceReset()
+- **TrainingSkillManager.cs** — 학습 전용 점진적 스킬 해금 관리
+  - 에피소드 시작 1개 → 15초마다 1개 추가 → 최대 3개
+  - BossObservationCollector와 동기화 (SetUnlockedSlotCount, SetBossSkill)
+- **SkillPoolSO.cs** — 스킬 풀 ScriptableObject (스킬 목록 + 원거리 분류)
+
+### 보완
+- **BossController.cs**
+  - _trainingMode 플래그 + TrainingMode 프로퍼티 (setter에서 NavMeshAgent 비활성 + 상태 리셋)
+  - ApplyTrainingModeToAgent() 분리 (setter + Start() 양쪽 호출)
+  - Update() 학습/비학습 분기 (학습 시 HandleActions() + NavAgent 제어 스킵)
+  - FindNearestPlayer() private → public
+- **BossObservationCollector.cs**
+  - Phase3Size 18→19, Phase4Size 24→25, Phase5Size 33→34
+  - #18: unlockedSlotCount / maxSlots 관측값 추가
+  - SetUnlockedSlotCount(), SetBossSkill() 공개 API 추가
+- **SkillManager.cs**
+  - _roundRobinEnabled + _roundRobinStart 필드 추가
+  - Update() 라운드 로빈 루프 (Execute 성공 시에만 break + 시작 인덱스 순환)
+  - RoundRobinEnabled 프로퍼티 추가
+
+### Phase 3 관측/보상 재설계 (Round 3 승인)
+- **BossObservationCollector.cs** — Phase3Size 19→22 (+3: 슬롯별 스킬 Range, Clamp01 정규화)
+  - Phase4Size 25→28, Phase5Size 34→37 연쇄 조정
+- **SkillIntroAgent.cs** — 보상 체계 전면 수정
+  - 시전 보상 0.3→0.05 (소보상), 실제 HP 감소 ×0.5 (주보상)
+  - Shield 감소 ×0.3 (보조), TotalHitCount 증가 ×0.2 (보조)
+  - 범위 밖 시전 -0.1 (TargetType.Self 제외)
+  - 에피소드 시작: 투사체/장판 풀 ReturnAll() + SkillExecutor.ResetAll()
+- **SkillExecutor.cs** — TotalHitCount 프로퍼티 + ResetAll() (쿨다운 포함 전체 초기화)
+- **ProjectilePool.cs** — ReturnAll() 추가 (활성 투사체 풀 반환)
+- **PersistentAreaPool.cs** — ReturnAll() 추가 (활성 장판 풀 반환)
+
+### 이동 프리트레인 분리 + 인스펙터 튜닝 확장 (Codex 승인)
+- **TrainingSkillManager.cs** — `_initialUnlockCount` SerializeField 추가 (기본값 1)
+  - `ResetForEpisode()`에서 `_initialUnlockCount`만큼 해금 (0이면 스킬 없음=이동 전용)
+- **SkillIntroAgent.cs** — 벽 충돌 패널티 하드코딩 → `_wWallHitPenalty`(0.05), `_wWallStayPenalty`(0.01)로 SerializeField 추출
+- **Chapter1.unity** — MaxStep: 0→8000, 직렬화 필드 현재 코드 동기화
+- **SkillIntro_Move_config.yaml** — 이동 프리트레인용 (initialize-from 없음)
+- **SkillIntro_config.yaml** — 스킬 학습용 (initialize-from: SkillIntro_Move)
+
+### 더블 터치 시스템 통합 + 관측값 24 확장 (Codex 3차 승인)
+**변경일:** 2026-04-25
+
+- **SkillIntroAgent.cs** — DualTargetAgent 검증 로직 통합
+  - 관측값 22→24 (p1Touched, p2Touched 추가)
+  - 더블 터치: _proximityRadius(5m) 내 진입 시 터치 판정, 양쪽 터치 시 성공 종료
+  - ActiveIsP1(): P1 터치 → P2 추적, P2 터치 → P1 추적, 양쪽/미터치 → nearest
+  - 보상: 터치 +0.2, 빠른 더블터치 +0.3 (3초 이내), 시간초과 터치 없음 -0.5, 부분 터치 -0.2
+  - 진행/정렬/스킬 시전 전부 ActiveTarget 기준으로 전환
+- **TrainingSkillManager.cs** — `_maxUnlockCount` SerializeField 추가 (Tick()에서 cap 제한)
+- **BossController.cs** — ApplyTrainingModeToAgent()에서 agent.enabled = false (NavMesh 완전 비활성)
+- **Chapter1.unity** — VectorObservationSize: 22→24, DualTargetAgent 컴포넌트 완전 제거
+- **SkillIntro_config.yaml** — initialize_from: SkillIntro_Move 추가
+
+### HP=0 사망 기반 에피소드 종료 + 학습 리셋 (Codex 수정→반영)
+**변경일:** 2026-04-25
+
+- **StatManager.cs** — `ResetForTraining()` 메서드 추가
+  - 상태이상/버프/디버프 코루틴 전체 정지 + Dictionary 초기화
+  - runtimeStats를 baseStats 원본으로 복원, HP 풀회복, _isAlive=true 복원
+- **SkillIntroAgent.cs** — 사망 종료 조건 + 에피소드 리셋 보강
+  - CheckTermination() 우선순위: 보스 사망(-1.0) → 양쪽 사망(+1.0) → 단일 사망(+0.3, 계속) → 맵 이탈 → 시간 초과
+  - ActiveIsP1(): 사망자 제외 → 이동/정렬/스킬 보상 전부 생존자 기준
+  - GetActiveTarget(): 양쪽 사망 시 null 반환
+  - CheckProximityTouch(): 사망자 근접 판정 스킵
+  - _p1DeathHandled/_p2DeathHandled 플래그로 킬 보상 1회 보장 + 자동 터치
+  - ApplyStepRewards(): 양쪽 사망 시 진행/정렬 보상 스킵
+  - ResetEpisodeState(): 보스 + P1/P2 StatManager.ResetForTraining() + StateManager.ForceReset()
+  - PlaceOnSpawn(): Rigidbody velocity 초기화 + StopAllCoroutines (밀림 버그 수정)
+  - SerializeField 추가: _bossDiedPenalty(1.0), _allKilledReward(1.0), _playerKilledReward(0.3)
+
+### 플레이어 스킬 분배 + 관측값 55 확장 (Codex 수정→반영)
+**변경일:** 2026-04-26
+
+- **SkillIntroAgent.cs** — 플레이어 스킬 분배 및 관측값 대폭 확장
+  - 관측값 30→55: Phase3(28) + touch(2) + 플레이어스킬(18) + 추가(7)
+  - P1/P2 TrainingSkillManager 참조 추가 (에피소드 리셋/Tick 호출)
+  - CollectPlayerSkillObs(): 플레이어당 범위×3 + 쿨다운비율×3 + 타겟타입×3 = 9×2 = 18
+  - CollectExtraObs(): P1/P2 캐스팅(2) + 이동속도(2) + 해금수(2) + 보스 버스트DMG(1) = 7
+  - 사망 플레이어 관측 → 전부 0 (stale signal 방지, Codex 피드백)
+  - ResetPlayer(): SkillExecutor.ResetAll() 추가 (쿨다운 이월 방지, Codex 피드백)
+  - OnActionReceived(): 생존 플레이어만 TrainingSkillManager.Tick() 호출
+  - CheckTermination(): Debug.Log 추가 (P1/P2 사망, 에피소드 종료 조건별)
+  - 미스 패널티(_wMissPenalty=0.05), 시전 보상 제거(_wFireReward=0)
+  - FreezePlayer/UnfreezePlayer: 사망 시 NavMesh 정지 + Rigidbody kinematic
+  - 터치 후 행동: 먼 플레이어 타겟 + 스킬 범위 유지 보상(_wRangeMaintain)
+- **BossObservationCollector.cs** — Phase3Size 22→28 (스킬 총쿨×3 + 타겟타입×3 추가)
+- **BossSkillPool.asset** → **TrainingCombatSkillPool.asset** 리네임 (중립 네이밍, Codex 피드백)
+- **Chapter1.unity** — VectorObservationSize: 30→55, P1/P2에 TrainingSkillManager 컴포넌트 추가
+- **StatManager.cs** — ResetForTraining() 메서드 추가 (코루틴 정리 + runtimeStats 복원)
+
+### Codex 교차 검증
+- Phase 3 설계: 5차 검증 승인
+- Phase 3 관측/보상 재설계: 3차 검증 승인 (Range Clamp01, Self 스킬 제외, HP+Shield+HitCount 3중 보상, 쿨다운 리셋, 에피소드 경계 투사체/장판 정리)
+- 이동 프리트레인 분리: 1차 승인 (0슬롯 obs 안정성 OK, hidden_units:128 적절)
+- 더블 터치 시스템: 3차 검증 승인 (hidden state 제거, fallback=nearest, touch reward Inspector 조정)
+- 사망 종료 로직: Codex 수정 피드백 3가지 반영 (ActiveIsP1 사망 체크, DeathHandled 플래그, 우선순위 명시)
+- 플레이어 스킬 분배: Codex 수정 피드백 — SkillExecutor.ResetAll 필수, 에셋 중립 네이밍, 사망 관측 0 처리
+- 관측값 55 확장: Codex 승인 (SkillIntroAgent 직접 수집, 사망 관측 0, 총 55개 PPO 부담 없음)
+
+---
+
+## 보스 관측값 시스템 — BossObservationCollector + PlayerBiasTracker + BossActionWeightCalculator
+**경로:** `Assets/Scripts/AI/BossAI/Observation/BossObservationCollector.cs`, `Assets/Scripts/AI/BossAI/Observation/PlayerBiasTracker.cs`, `Assets/Scripts/AI/BossAI/Observation/BossActionWeightCalculator.cs`
+**보완:** `BossController.cs`, `SkillExecutor.cs`, `SkillContext.cs`, `SkillComponents.cs`, `SkillProjectile.cs`
+**변경일:** 2026-04-24
+
+### 신규
+- **BossObservationCollector.cs** — Phase 3+ ML-Agent용 33개 관측값 중앙 수집
+  - Phase별 누적 수집: CollectUpToPhase3(18), CollectUpToPhase4(24), CollectUpToPhase5(33)
+  - Phase 1/2 에이전트는 기존 코드 유지, Phase 3+부터 P1/P2 고정 정렬 (Phase 2 active/secondary와 의도적 단절)
+  - 내부 추적: 버스트 피해(1초 윈도우), 이동속도 EMA, 스킬 이력/명중률
+  - recentParryCount(#18)는 패링 시스템 미구현으로 0 고정
+- **PlayerBiasTracker.cs** — 9종 플레이어 행동 편향 점수 (0.0~1.0)
+  - 이중 시간축: 15~20초 장기 로그 + 0.5초 단기 재계산
+  - 이벤트 트리거: NotifyAttack/SkillUse/HitTaken/Evade/Parry/RopeUse
+  - 패링/로프 편향은 샘플링 기반 fallback (시스템 미구현 → 자연감쇠로 0 유지)
+- **BossActionWeightCalculator.cs** — 9종 보스 행동 가중치 + weighted-random 선택
+  - 비적합 게이트: 관련 편향 < 0.05 → 가중치 0
+  - 적합 행동 바닥값 0.1, weighted-random 확률 샘플링
+  - 반복 방지: 직전 동일 -0.2, 최근 3회 중 2회 -0.35, 직전 2회 동일 추가 -0.15
+  - legal mask: 미구현/페이즈 잠금 행동 원천 차단
+  - fallback: Σweights ≤ 0 → legal 행동만 균등 분배
+
+### 보완
+- **BossController.cs** — `public int CurrentPhase => currentPhase;` 프로퍼티 추가
+- **SkillExecutor.cs** — 적중 기록 API 추가
+  - RecordAttempt: Execute() 내부에서 시도 기록
+  - RecordHit: SkillContext.OnHitRecorded 콜백으로 적중 지점에서 기록 (dedupe 플래그)
+  - 외부 조회: GetHitRate, GetUseCount, GetLastNSkillIds, TotalUseCount
+- **SkillContext.cs** — `OnHitRecorded` 콜백 + `HitRecorded` dedupe 플래그 추가
+- **SkillComponents.cs** — ApplyInArea, DealDirectionalHit에서 anyHit 시 OnHitRecorded 호출
+- **SkillProjectile.cs** — ApplyHit에서 OnHitRecorded 호출
+
+### Codex 교차 검증
+- 5차 검증 승인 (RecordHit dedupe, legal mask fallback, 비적합 게이트+바닥값 0.1)
+
+---
+
+## 전투 봇 AI — 스킬 포지셔닝 통합 (신규)
+**경로:** `Assets/Scripts/AI/Player/Combat/PlayerBotCombatInit.cs`, `Assets/Scripts/Skill/Core/SkillDistributor.cs`, `Assets/Scripts/AI/Player/DoubleMove/LookAtBossAction.cs`
+**변경일:** 2026-04-23
+
+### 신규
+- **PlayerBotCombatInit.cs** — 전투 봇 Blackboard 초기화 컴포넌트
+  - BehaviorGraphAgent를 Awake()에서 비활성화, Start()에서 값 주입 후 활성화 (초기화 보장)
+  - Boss/Agent/Ally/Self + 거리 파라미터 8종(DangerRange, OptimalMin, OptimalMax, FleeDistance, FlankRadius, StrafeRadius, StrafeAngleStep, MinSpacing) Blackboard 주입
+  - 방어 코드: _behaviorAgent, bb, _navAgent, _ally null 시 경고 로그
+- **SkillDistributor.cs** — 중앙 스킬 슬롯 분배기 (플레이어 전용)
+  - SkillLoadout(nested class): Name, Target(SkillManager), Skills(SkillDefinition[])
+  - Start()에서 ClearAll() + SetSlot() 호출
+  - 범위: P1/P2 플레이어만. 보스는 SkillManager 일반화(ICombatant) 후 별도 진행
+- **LookAtBossAction.cs** — Behavior Graph 액션 노드 (보스 방향 회전)
+  - 각 이동 분기의 SetNavDestination 뒤에서 Slerp로 보스 방향 회전
+  - NavMeshAgent.updateRotation = false 설정
+  - 사유: 스킬이 transform.forward 기반이므로 이동 후 보스를 향해야 적중
+
+### Codex 교차 검증
+- 5차 검증 승인 (PlayerBotCombatInit + Blackboard 주입 구조)
+- 7차 검증 승인 (SkillDistributor 플레이어 전용 + FaceTarget 대체)
+
+---
+
+## SkillProjectile 타격 판정을 Trigger → 위치 기반으로 변경 (수정)
+**경로:** `Assets/Scripts/Skill/Projectile/SkillProjectile.cs`
+**변경일:** 2026-04-23
+
+### 수정
+- **OnTriggerEnter 제거** → FixedUpdate에서 `Physics.OverlapSphereNonAlloc`로 위치 기반 적중 판정
+  - 사유: 서버 권위(Host-authoritative) 전환 준비. 다른 스킬(DealDirectionalHit, ApplyInArea, PersistentArea)과 판정 방식 통일
+- **OverlapSphereNonAlloc + static buffer** — GC 할당 방지 (투사체는 매 틱 반복이므로)
+- **FixedUpdate 사용** — Rigidbody 이동과 동일한 물리 틱에서 판정 (프레임레이트 비의존)
+- **ShouldRunHitDetection() 가드** — 서버 전환 시 IsServer/IsHost 체크로 교체할 지점 분리
+- **ApplyHit() 분리** — 서버 전환 시 RPC 발송 지점으로 활용
+- **LayerMask _targetMask 추가** — 불필요한 콜라이더 탐색 감소
+- Collider/RequireComponent 유지 — 프리팹 호환성 보존
+
+---
+
+## CrushingBarrage onMiss 무조건 타격 버그 수정 (버그수정)
+**경로:** `Assets/Scripts/Skill/Core/SkillLibrary.cs`
+**변경일:** 2026-04-22
+
+### 버그 수정
+- **CrushingBarrage() / CrushingBarrage_Boss()** — onMiss 핸들러에서 DealMultiHitDamage가 2차 DealDirectionalHit 적중 여부와 무관하게 무조건 실행되는 버그 수정
+  - 사유: 2차 cone도 miss인데 ctx.PrimaryTarget이 복원되어 다단히트(34×4=136)가 방향 무관 적용됨
+  - 수정: onMiss 내부 DealMultiHitDamage를 TriggerOnHit(onHit:)으로 감싸서 2차 cone 적중 시에만 발동
+
+---
+
+## RangeDisplay 형태별 분기 + 부채꼴 메쉬 + 타겟 탐색 수정 (수정/버그수정)
+**경로:** `Assets/Scripts/Skill/Core/SkillRangeDisplay.cs`, `Assets/Scripts/Skill/Core/SkillComponents.cs`, `Assets/Scripts/Skill/Core/SkillManager.cs`, `Assets/Scripts/Skill/Prefab/RangeIndicatorMat.mat`
+**변경일:** 2026-04-22
+
+### 버그 수정
+- **SkillManager.FindNearestTarget()** — `bossObj.GetComponent<ICombatant>()` → `GetComponentInChildren<ICombatant>()`
+  - 사유: `_gameManager.Bosses`에 등록된 GameObject에서 ICombatant가 자식에 있으면 탐색 실패 → 모든 스킬 "타겟 없음"
+- **RangeIndicatorMat.mat** — `_ALPHAPREMULTIPLY_ON` → `_EMISSION` 키워드 교체, `_SrcBlend: 1` → `5`(SrcAlpha)
+  - 사유: URP Unlit→Lit 전환 시 알파 블렌딩 미작동 → 인디케이터 화면에 안 보임
+
+### 수정
+- **SkillRangeDisplay.cs** — 전면 개선
+  - 부채꼴 런타임 메쉬 생성 (`BuildFanMesh`) — Cone 형태를 원형이 아닌 실제 부채꼴로 표시
+  - `_cylinderMesh` Awake 시 원본 캐싱 — 풀 반환 후 메쉬 복원 보장
+  - Emission 발광 (`_emissionIntensity = 3f`), URP Lit Material 연동
+  - 가시성 강화: Y높이 0.15→0.5, 두께 0.15→0.6, 지속시간 1.5→2.5초, 홀드 비율 50%
+  - 형광색 적용: Hit 빨강, Miss 노랑, Projectile 초록 (알파 1.0)
+- **SkillComponents.cs ApplyInArea** — 형태별 RangeDisplay 분기
+  - 기존: 모든 형태에 `ShowCircle`만 호출
+  - 변경: Circle→ShowCircle, Cone→ShowCone, Line→ShowLine
+- **SkillComponents.cs SpawnPersistentArea** — RangeDisplay 호출 추가
+  - 침식 장판 등 장판 생성 시 범위 표시 누락 해결
+
+### Codex 교차 검증
+- 승인 완료. 추후 고려사항: Line 장판 분기 추가, Cone 메쉬 캐시 Dictionary화 (현재는 단일 각도 캐싱)
+
+---
+
+## 2차 튜닝 — SO Range ×3 + SkillLibrary 이펙트 ×1.5 + RangeDisplay 시각 ×2.5 (수정)
+**경로:** `Assets/ScriptableObjects/Skills/*.asset` (19개), `Assets/Editor/SkillDefinitionGenerator.cs`, `Assets/Scripts/Skill/Core/SkillLibrary.cs`, `Assets/Scripts/Skill/Core/SkillRangeDisplay.cs`
+**변경일:** 2026-04-21
+
+### 수정
+- **SO Range ×3 확대** — 자동 시전 거리 재조정 (유저 실 테스트 기반)
+  - 근접 방향타격: 8m → 24m
+  - 자기중심 광역: 9m → 27m
+  - Cone(MarkWave_Boss): 11m → 33m
+  - 투사체/원거리: 22m → 66m
+  - 장판 배치형: 14m → 42m
+  - Self 타입: 0m 유지
+- **SkillDefinitionGenerator.cs** — range 파라미터 SO ×3 값과 동기화
+- **SkillLibrary.cs 이펙트 범위 ×1.5 확대**
+  - DealDirectionalHit 좁은: 4.5~5.5m → 6.8~8.3m, 광역: 5.5~6.8m → 8.3~10.2m
+  - ApplyInArea 좁은: 3.5~4.0m → 5.3~6.0m, 광역: 7.2~7.9m → 10.8~11.9m, Cone: 9.0m → 13.5m
+  - SpawnPersistentArea 내부: 2.5~3.0m → 3.8~4.5m, 외부: 6.8~7.4m → 10.2~11.1m
+  - LaunchProjectile range: 14~20m → 21~30m, speed: 16~21 → 19~25
+- **SkillRangeDisplay.cs** — `_visualScale = 2.5f` 필드 추가, Circle/Cone/Line 인디케이터 스케일에 적용
+  - 사유: 유저 육안 테스트에서 인디케이터가 식별 불가 수준으로 작았음 (시각적 크기 지정, 기획 변경 아님)
+
+### Codex 교차 검증
+- 2차 튜닝 승인 완료
+
+---
+
+## 스킬 범위 확장 + ICombatant 부모 탐색 + 중복 타격 방지 (수정)
+**경로:** `Assets/Scripts/Skill/Core/SkillComponents.cs`, `Assets/Scripts/Skill/Projectile/SkillProjectile.cs`, `Assets/Scripts/Skill/Area/SkillArea.cs`, `Assets/Scripts/Skill/Core/SkillLibrary.cs`, `Assets/Editor/SkillDefinitionGenerator.cs`, `Assets/ScriptableObjects/Skills/*.asset` (23개)
+**변경일:** 2026-04-20
+
+### 수정
+- **ICombatant 탐색 통일 (4곳)** — `GetComponent<ICombatant>` / `TryGetComponent<ICombatant>` → `GetComponentInParent<ICombatant>` 변경
+  - `SkillComponents.cs` DealDirectionalHit (line 100), ApplyInArea (line 400)
+  - `SkillArea.cs` TickArea (line 111)
+  - `SkillProjectile.cs` OnTriggerEnter (line 65)
+  - 사유: 보스의 Collider가 자식 오브젝트에 있으면 부모의 BossController(ICombatant)를 못 찾던 문제 해결
+- **중복 타격 방지** — 위 4곳 모두 `HashSet<ICombatant>`로 동일 대상 1회만 처리
+  - `SkillProjectile`은 인스턴스 필드 `_hitTargets` 추가 (pierce 관통 투사체 대응), OnSpawn/OnDespawn에서 Clear
+- **SO Range 스킬군별 재조정** — 40m 일괄 → 스킬 유형별 적정 거리
+  - 근접 방향타격 (ExecutionSpike, CrushingBarrage, FortressArmor + Boss 3종): 8m
+  - 자기중심 광역 (CollapseRoar + Boss): 9m
+  - 자기중심 Cone (MarkWave_Boss): 11m
+  - 투사체/원거리 (HuntingMark, SealChain, BarrierBreaker, PiercingShot, RuptureMagazine, BarrierBreaker_Boss): 22m
+  - 장판 배치형 (ErosionField + Boss, SealChain_Boss, RuptureMagazine_Boss): 14m
+  - Self 타입 (SurvivalPulse, OverchargeMode + Boss): 0m (Generator와 일치)
+- **SkillDefinitionGenerator.cs** — range 파라미터를 SO Range와 동일하게 동기화 (재생성 시 덮어쓰기 방지)
+- **SkillLibrary.cs 이펙트 범위 차등 확장** — 부품 유형별 배율 적용
+  - DealDirectionalHit: ×2.5 (좁은 4.5~5.5m, 광역 재시도 5.5~6.8m)
+  - ApplyInArea 좁은: ×2.5 (3.5~4.0m), 광역/Cone: ×1.8 (7.2~9.0m)
+  - SpawnPersistentArea 내부: ×2.5 (2.5~3.0m), 외부: ×2.0 (6.8~7.4m)
+  - LaunchProjectile range: ×2.0 (14~20m), speed: ×1.3 (16~21)
+  - 데미지/상태이상/각도는 변경 없음
+
+### Codex 교차 검증
+- 4차 검증 후 승인 (1차: 일괄 4.5배 거부 → 2차: 부품별 차등 + 원인 분리 → 3차: 중복 타격 방지 추가 → 4차: 최종 승인)
+
+---
+
 ## 스킬 범위 표시 가시성 강화 + 자동 시전 거리 40m 확장 (수정)
 **경로:** `Assets/Scripts/Skill/Core/SkillRangeDisplay.cs`, `Assets/ScriptableObjects/Skills/*.asset` (23개 전체)
 **변경일:** 2026-04-18

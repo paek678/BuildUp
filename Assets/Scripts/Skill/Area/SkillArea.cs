@@ -104,12 +104,15 @@ public class SkillArea : MonoBehaviour, IPersistentArea
 
         ICombatant original    = _ctx.PrimaryTarget;
         bool       originalHit = _ctx.HitLanded;
-        var colliders = Physics.OverlapSphere(transform.position, _radius);
+        var colliders  = Physics.OverlapSphere(transform.position, _radius);
+        var processed  = new System.Collections.Generic.HashSet<ICombatant>();
 
         foreach (var col in colliders)
         {
-            if (!col.TryGetComponent<ICombatant>(out var target)) continue;
+            var target = col.GetComponentInParent<ICombatant>();
+            if (target == null) continue;
             if (ReferenceEquals(target, _ctx.Caster)) continue;
+            if (!processed.Add(target)) continue;
 
             if (_shape == AreaShape.Cone)
             {

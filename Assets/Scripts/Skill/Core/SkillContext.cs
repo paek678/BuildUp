@@ -22,6 +22,12 @@ public class SkillContext
     // TriggerOnHit(#34) 이 이 값을 읽어 분기
     public bool HitLanded;
 
+    // ── 적중 기록 콜백 (SkillExecutor 가 주입) ──────────────────
+    // 실제 적중 지점(ApplyInArea, DealDirectionalHit, SkillProjectile.ApplyHit)에서 호출
+    // dedupe: HitRecorded=true 이후 동일 시전에서 재호출 무시
+    public System.Action OnHitRecorded;
+    public bool HitRecorded;
+
     // ── 대상 상태 스냅샷 (RefreshSnapshot 호출 시점 기준) ─────────
     public float TargetHpPercent;  // 0 ~ 1
     public float TargetDistance;   // Caster ↔ PrimaryTarget 거리 (m)

@@ -32,6 +32,9 @@ public class SkillManager : MonoBehaviour
     [Header("설정")]
     [SerializeField] private bool _autoCastEnabled = true;
     [SerializeField] private bool _logAutoCast = true;
+    [SerializeField] private bool _roundRobinEnabled = false;
+
+    private int _roundRobinStart = 0;
 
     [Header("참조")]
     [SerializeField] private StatManager _statManager;
@@ -44,12 +47,19 @@ public class SkillManager : MonoBehaviour
     // ── 외부 조회 ────────────────────────────────────────────
     public int  MaxSlots        => SlotCount;
     public bool AutoCastEnabled => _autoCastEnabled;
+    public bool RoundRobinEnabled
+    {
+        get => _roundRobinEnabled;
+        set => _roundRobinEnabled = value;
+    }
     public IReadOnlyList<SkillDefinition> Slots => _slots;
 
     // ══════════════════════════════════════════════════════════
     // 초기화
     // ══════════════════════════════════════════════════════════
-
+/// <summary>
+/// 
+/// </summary>
     private void Awake()
     {
         _executor = GetComponent<SkillExecutor>();
@@ -88,8 +98,12 @@ public class SkillManager : MonoBehaviour
             return;
         }
 
-        for (int i = 0; i < _slots.Length; i++)
+        int start = _roundRobinEnabled ? _roundRobinStart : 0;
+        int count = _slots.Length;
+
+        for (int n = 0; n < count; n++)
         {
+            int i = (start + n) % count;
             if (_slots[i] == null) continue;
             if (!CanCast(_slots[i], out var ctx)) continue;
 
@@ -99,10 +113,14 @@ public class SkillManager : MonoBehaviour
 
             if (_stateManager != null) _stateManager.NotifyCastEnd();
 
-            if (fired && _logAutoCast)
-                Debug.Log($"[AutoCast] <b>슬롯[{i}]</b> {_slots[i].DisplayName} 자동 시전 | {name}");
-
-            break;
+            if (fired)
+            {
+                if (_logAutoCast)
+                    Debug.Log($"[AutoCast] <b>슬롯[{i}]</b> {_slots[i].DisplayName} 자동 시전 | {name}");
+                if (_roundRobinEnabled)
+                    _roundRobinStart = (i + 1) % count;
+                break;
+            }
         }
     }
 
@@ -239,7 +257,7 @@ public class SkillManager : MonoBehaviour
         foreach (var bossObj in _gameManager.Bosses)
         {
             if (bossObj == null) continue;
-            var combatant = bossObj.GetComponent<ICombatant>();
+            var combatant = bossObj.GetComponentInChildren<ICombatant>();
             if (combatant == null || !combatant.IsAlive) continue;
 
             float dist = Vector3.Distance(transform.position, combatant.Transform.position);

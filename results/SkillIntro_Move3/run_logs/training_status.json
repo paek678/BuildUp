@@ -1,0 +1,65 @@
+{
+    "SkillIntro": {
+        "checkpoints": [
+            {
+                "steps": 594767,
+                "file_path": "results\\SkillIntro_Move3\\SkillIntro\\SkillIntro-594767.onnx",
+                "reward": -16.98366640508175,
+                "creation_time": 1777172080.8342853,
+                "auxillary_file_paths": [
+                    "results\\SkillIntro_Move3\\SkillIntro\\SkillIntro-594767.pt"
+                ]
+            },
+            {
+                "steps": 617359,
+                "file_path": "results\\SkillIntro_Move3\\SkillIntro\\SkillIntro-617359.onnx",
+                "reward": -11.656283257901668,
+                "creation_time": 1777173729.3341277,
+                "auxillary_file_paths": [
+                    "results\\SkillIntro_Move3\\SkillIntro\\SkillIntro-617359.pt"
+                ]
+            },
+            {
+                "steps": 923397,
+                "file_path": "results\\SkillIntro_Move3\\SkillIntro\\SkillIntro-923397.onnx",
+                "reward": -53.08658849596977,
+                "creation_time": 1777177757.1044016,
+                "auxillary_file_paths": [
+                    "results\\SkillIntro_Move3\\SkillIntro\\SkillIntro-923397.pt"
+                ]
+            },
+            {
+                "steps": 999945,
+                "file_path": "results\\SkillIntro_Move3\\SkillIntro\\SkillIntro-999945.onnx",
+                "reward": -70.20382147729397,
+                "creation_time": 1777179057.101367,
+                "auxillary_file_paths": [
+                    "results\\SkillIntro_Move3\\SkillIntro\\SkillIntro-999945.pt"
+                ]
+            },
+            {
+                "steps": 1141163,
+                "file_path": "results\\SkillIntro_Move3\\SkillIntro\\SkillIntro-1141163.onnx",
+                "reward": -23.97795047238469,
+                "creation_time": 1777181123.4250023,
+                "auxillary_file_paths": [
+                    "results\\SkillIntro_Move3\\SkillIntro\\SkillIntro-1141163.pt"
+                ]
+            }
+        ],
+        "final_checkpoint": {
+            "steps": 1141163,
+            "file_path": "results\\SkillIntro_Move3\\SkillIntro.onnx",
+            "reward": -23.97795047238469,
+            "creation_time": 1777181123.4250023,
+            "auxillary_file_paths": [
+                "results\\SkillIntro_Move3\\SkillIntro\\SkillIntro-1141163.pt"
+            ]
+        }
+    },
+    "metadata": {
+        "stats_format_version": "0.3.0",
+        "mlagents_version": "1.2.0.dev0",
+        "torch_version": "2.2.2+cu121"
+    }
+}

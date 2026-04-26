@@ -18,7 +18,7 @@ MonoBehaviour:
     + \uD45C\uC2DD \uB514\uBC84\uD504."
   Icon: {fileID: 0}
   Cooldown: 7
-  Range: 40
+  Range: 66
   TargetType: 0
   RoleTags:
   - Mark

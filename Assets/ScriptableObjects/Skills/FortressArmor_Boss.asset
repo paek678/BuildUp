@@ -17,7 +17,7 @@ MonoBehaviour:
   Description: "\uC804\uBC29 \uD0C0\uACA9 + \uC2E4\uB4DC \uD68D\uB4DD."
   Icon: {fileID: 0}
   Cooldown: 8
-  Range: 40
+  Range: 24
   TargetType: 3
   RoleTags:
   - Shield

@@ -92,13 +92,15 @@ public static class SkillComponents
                 ? ctx.CastDirection.normalized
                 : ctx.Caster.Transform.forward;
 
-            var  saved  = ctx.PrimaryTarget;
-            bool anyHit = false;
+            var  saved     = ctx.PrimaryTarget;
+            bool anyHit    = false;
+            var  processed = new System.Collections.Generic.HashSet<ICombatant>();
 
             foreach (var col in Physics.OverlapSphere(origin, range, layerMask))
             {
-                var target = col.GetComponent<ICombatant>();
+                var target = col.GetComponentInParent<ICombatant>();
                 if (target == null || ReferenceEquals(target, ctx.Caster)) continue;
+                if (!processed.Add(target)) continue;
                 if (Vector3.Angle(forward, col.transform.position - origin) > angleDeg * 0.5f) continue;
 
                 ctx.PrimaryTarget = target;
@@ -109,6 +111,7 @@ public static class SkillComponents
             }
 
             if (!anyHit) { ctx.PrimaryTarget = saved; ctx.HitLanded = false; }
+            else         ctx.OnHitRecorded?.Invoke();
             SkillRangeDisplay.Instance?.ShowCone(origin, forward, range, angleDeg, anyHit);
             ctx.AddLog($"DealDirectionalHit(dmg:{damage},r:{range},a:{angleDeg})=>{(anyHit ? "HIT" : "MISS")}");
         };
@@ -389,16 +392,18 @@ public static class SkillComponents
                                         float angleDeg = 360f, float lineWidth = 0.5f, int layerMask = -1) =>
         ctx =>
         {
-            var     saved   = ctx.PrimaryTarget;
-            bool    anyHit  = false;
-            Vector3 forward = ctx.CastDirection != Vector3.zero
+            var     saved     = ctx.PrimaryTarget;
+            bool    anyHit    = false;
+            var     processed = new System.Collections.Generic.HashSet<ICombatant>();
+            Vector3 forward   = ctx.CastDirection != Vector3.zero
                 ? ctx.CastDirection.normalized
                 : Vector3.forward;
 
             foreach (var col in Physics.OverlapSphere(ctx.CastPosition, radius, layerMask))
             {
-                var target = col.GetComponent<ICombatant>();
+                var target = col.GetComponentInParent<ICombatant>();
                 if (target == null || ReferenceEquals(target, ctx.Caster)) continue;
+                if (!processed.Add(target)) continue;
 
                 Vector3 toTarget = col.transform.position - ctx.CastPosition;
 
@@ -421,8 +426,20 @@ public static class SkillComponents
             }
 
             ctx.HitLanded     = anyHit;
+            if (anyHit) ctx.OnHitRecorded?.Invoke();
             ctx.PrimaryTarget = saved;
-            SkillRangeDisplay.Instance?.ShowCircle(ctx.CastPosition, radius, anyHit);
+            switch (shape)
+            {
+                case AreaShape.Cone:
+                    SkillRangeDisplay.Instance?.ShowCone(ctx.CastPosition, forward, radius, angleDeg, anyHit);
+                    break;
+                case AreaShape.Line:
+                    SkillRangeDisplay.Instance?.ShowLine(ctx.CastPosition, forward, radius);
+                    break;
+                default:
+                    SkillRangeDisplay.Instance?.ShowCircle(ctx.CastPosition, radius, anyHit);
+                    break;
+            }
             ctx.AddLog($"ApplyInArea(r:{radius},{shape},angle:{angleDeg},width:{lineWidth})=>{(anyHit ? "HIT" : "MISS")}");
         };
 
@@ -445,6 +462,12 @@ public static class SkillComponents
 
             PersistentAreaManager.Instance.Spawn(pos, forward, radius, shape, angleDeg,
                                                  duration, tickInterval, tickAction, ctx);
+
+            if (shape == AreaShape.Cone)
+                SkillRangeDisplay.Instance?.ShowCone(pos, forward, radius, angleDeg, true);
+            else
+                SkillRangeDisplay.Instance?.ShowCircle(pos, radius, true);
+
             ctx.AddLog($"SpawnPersistentArea(r:{radius},{shape},{angleDeg}°,{duration}s,tick:{tickInterval}s)");
         };
 

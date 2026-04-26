@@ -22,14 +22,14 @@ public static class SkillLibrary
     public static SkillStep ExecutionSpike() =>
         ctx =>
         {
-            DealDirectionalHit(125f, 2.0f, 30f).Invoke(ctx);
+            DealDirectionalHit(125f, 15f, 30f).Invoke(ctx);
             TriggerOnHit(
                 onHit: hit =>
                 {
                     ApplyVulnerability(2f, 0.05f).Invoke(hit);
                     ExecuteBelowHP(30f, 20f).Invoke(hit);
                 },
-                onMiss: DealDirectionalHit(125f, 2.4f, 70f)
+                onMiss: DealDirectionalHit(125f, 18f, 70f)
             ).Invoke(ctx);
         };
 
@@ -37,7 +37,7 @@ public static class SkillLibrary
     public static SkillStep CrushingBarrage() =>
         ctx =>
         {
-            DealDirectionalHit(34f, 1.8f, 35f).Invoke(ctx);
+            DealDirectionalHit(34f, 13.6f, 35f).Invoke(ctx);
             TriggerOnHit(
                 onHit: hit =>
                 {
@@ -46,18 +46,20 @@ public static class SkillLibrary
                 },
                 onMiss: miss =>
                 {
-                    DealDirectionalHit(34f, 2.2f, 75f).Invoke(miss);
-                    DealMultiHitDamage(34f, 4).Invoke(miss);
+                    DealDirectionalHit(34f, 16.6f, 75f).Invoke(miss);
+                    TriggerOnHit(
+                        onHit: DealMultiHitDamage(34f, 4)
+                    ).Invoke(miss);
                 }
             ).Invoke(ctx);
         };
 
     // 침식 장판 (플레이어) — 투사체 명중 지점에 2중 장판 생성
     public static SkillStep ErosionField() =>
-        LaunchProjectile(12f, 7f, false,
+        LaunchProjectile(19f, 42f, false,
             impact =>
             {
-                SpawnPersistentArea(4f, 1.0f, AreaShape.Circle, 1f,
+                SpawnPersistentArea(4f, 7.6f, AreaShape.Circle, 1f,
                     tick =>
                     {
                         ApplyDamageOverTime(1f, 8f).Invoke(tick);
@@ -65,7 +67,7 @@ public static class SkillLibrary
                     }
                 ).Invoke(impact);
 
-                SpawnPersistentArea(4f, 3.4f, AreaShape.Circle, 1f,
+                SpawnPersistentArea(4f, 20.4f, AreaShape.Circle, 1f,
                     tick => ApplyDamageOverTime(1f, 8f).Invoke(tick)
                 ).Invoke(impact);
             }
@@ -73,7 +75,7 @@ public static class SkillLibrary
 
     // 사냥 표식 — 단일 투사체, 명중 시 피해 + 표식 디버프
     public static SkillStep HuntingMark() =>
-        LaunchProjectile(14f, 8f, false,
+        LaunchProjectile(22f, 48f, false,
             hit =>
             {
                 DealDamage(80f).Invoke(hit);
@@ -101,20 +103,20 @@ public static class SkillLibrary
     public static SkillStep FortressArmor() =>
         ctx =>
         {
-            DealDirectionalHit(90f, 1.9f, 35f).Invoke(ctx);
+            DealDirectionalHit(90f, 14.4f, 35f).Invoke(ctx);
             TriggerOnHit(
                 onHit: hit =>
                 {
                     float maxHp = hit.Caster?.MaxHP ?? 0f;
                     GainShield(maxHp * 0.06f).Invoke(hit);
                 },
-                onMiss: DealDirectionalHit(90f, 2.3f, 75f)
+                onMiss: DealDirectionalHit(90f, 17.4f, 75f)
             ).Invoke(ctx);
         };
 
     // 봉쇄 사슬 — 유도 투사체, 적중 시 피해 + 경직 + 침묵
     public static SkillStep SealChain() =>
-        LaunchProjectile(13f, 8f, false,
+        LaunchProjectile(20f, 48f, false,
             hit =>
             {
                 DealDamage(70f).Invoke(hit);
@@ -127,7 +129,7 @@ public static class SkillLibrary
     public static SkillStep CollapseRoar() =>
         ctx =>
         {
-            ApplyInArea(1.4f, AreaShape.Circle,
+            ApplyInArea(10.6f, AreaShape.Circle,
                 inner =>
                 {
                     DealDamage(95f).Invoke(inner);
@@ -135,13 +137,17 @@ public static class SkillLibrary
                 }
             ).Invoke(ctx);
             TriggerOnHit(
-                onMiss: ApplyInArea(4.0f, AreaShape.Circle, DealDamage(95f))
+                onMiss: ApplyInArea(21.6f, AreaShape.Circle, DealDamage(95f))
             ).Invoke(ctx);
         };
 
     // 방벽 파쇄 — 실드 파괴 + 방어력 감소 + 본 피해
+    /// <summary>
+    /// /
+    /// </summary>
+    /// <returns></returns>
     public static SkillStep BarrierBreaker() =>
-        LaunchProjectile(12f, 7f, false,
+        LaunchProjectile(19f, 42f, false,
             hit =>
             {
                 DealShieldBreakDamage(60f, 1.4f).Invoke(hit);
@@ -167,7 +173,7 @@ public static class SkillLibrary
     // 관통 저격 — 직선 관통 투사체
     // NoCoreHit 재발사는 약점 판정 시스템 구현 후 복원
     public static SkillStep PiercingShot() =>
-        LaunchProjectile(16f, 10f, true,
+        LaunchProjectile(25f, 60f, true,
             hit =>
             {
                 ApplyDefenseDown(3f, 8f).Invoke(hit);
@@ -178,7 +184,7 @@ public static class SkillLibrary
     // 파열 탄창 — 폭발 투사체
     // NoCoreHit 재발사는 약점 판정 시스템 구현 후 복원
     public static SkillStep RuptureMagazine() =>
-        LaunchProjectile(13f, 8f, false,
+        LaunchProjectile(20f, 48f, false,
             hit =>
             {
                 ApplyVulnerability(3f, 0.10f).Invoke(hit);
@@ -228,14 +234,14 @@ public static class SkillLibrary
     public static SkillStep ExecutionSpike_Boss() =>
         ctx =>
         {
-            DealDirectionalHit(118f, 2.2f, 35f).Invoke(ctx);
+            DealDirectionalHit(118f, 16.6f, 35f).Invoke(ctx);
             TriggerOnHit(
                 onHit: hit =>
                 {
                     ApplyVulnerability(2.5f, 0.06f).Invoke(hit);
                     ExecuteBelowHP(30f, 26f).Invoke(hit);
                 },
-                onMiss: DealDirectionalHit(118f, 2.7f, 75f)
+                onMiss: DealDirectionalHit(118f, 20.4f, 75f)
             ).Invoke(ctx);
         };
 
@@ -243,7 +249,7 @@ public static class SkillLibrary
     public static SkillStep CrushingBarrage_Boss() =>
         ctx =>
         {
-            DealDirectionalHit(32f, 2.0f, 40f).Invoke(ctx);
+            DealDirectionalHit(32f, 15f, 40f).Invoke(ctx);
             TriggerOnHit(
                 onHit: hit =>
                 {
@@ -252,8 +258,10 @@ public static class SkillLibrary
                 },
                 onMiss: miss =>
                 {
-                    DealDirectionalHit(32f, 2.5f, 80f).Invoke(miss);
-                    DealMultiHitDamage(32f, 4).Invoke(miss);
+                    DealDirectionalHit(32f, 19f, 80f).Invoke(miss);
+                    TriggerOnHit(
+                        onHit: DealMultiHitDamage(32f, 4)
+                    ).Invoke(miss);
                 }
             ).Invoke(ctx);
         };
@@ -262,7 +270,7 @@ public static class SkillLibrary
     public static SkillStep ErosionField_Boss() =>
         ctx =>
         {
-            SpawnPersistentArea(4f, 1.2f, AreaShape.Circle, 1f,
+            SpawnPersistentArea(4f, 9f, AreaShape.Circle, 1f,
                 tick =>
                 {
                     ApplyDamageOverTime(1f, 7f).Invoke(tick);
@@ -270,7 +278,7 @@ public static class SkillLibrary
                 }
             ).Invoke(ctx);
 
-            SpawnPersistentArea(4f, 3.7f, AreaShape.Circle, 1f,
+            SpawnPersistentArea(4f, 22.2f, AreaShape.Circle, 1f,
                 tick => ApplyDamageOverTime(1f, 7f).Invoke(tick)
             ).Invoke(ctx);
         };
@@ -295,14 +303,14 @@ public static class SkillLibrary
     public static SkillStep FortressArmor_Boss() =>
         ctx =>
         {
-            DealDirectionalHit(82f, 2.1f, 35f).Invoke(ctx);
+            DealDirectionalHit(82f, 16f, 35f).Invoke(ctx);
             TriggerOnHit(
                 onHit: hit =>
                 {
                     float maxHp = hit.Caster?.MaxHP ?? 0f;
                     GainShield(maxHp * 0.08f).Invoke(hit);
                 },
-                onMiss: DealDirectionalHit(82f, 2.6f, 80f)
+                onMiss: DealDirectionalHit(82f, 19.6f, 80f)
             ).Invoke(ctx);
         };
 
@@ -310,7 +318,7 @@ public static class SkillLibrary
     public static SkillStep CollapseRoar_Boss() =>
         ctx =>
         {
-            ApplyInArea(1.6f, AreaShape.Circle,
+            ApplyInArea(12f, AreaShape.Circle,
                 inner =>
                 {
                     DealDamage(88f).Invoke(inner);
@@ -319,7 +327,7 @@ public static class SkillLibrary
                 }
             ).Invoke(ctx);
             TriggerOnHit(
-                onMiss: ApplyInArea(4.4f, AreaShape.Circle, DealDamage(88f))
+                onMiss: ApplyInArea(23.8f, AreaShape.Circle, DealDamage(88f))
             ).Invoke(ctx);
         };
 
@@ -337,9 +345,9 @@ public static class SkillLibrary
             }
         );
 
-    // 표식 파동 (보스) — 전방 부채꼴 80도 / 5m 패턴
+    // 표식 파동 (보스) — 전방 부채꼴 80도 / 13.5m 패턴
     public static SkillStep MarkWave_Boss() =>
-        ApplyInArea(5f, AreaShape.Cone,
+        ApplyInArea(27f, AreaShape.Cone,
             inner =>
             {
                 DealDamage(70f).Invoke(inner);
@@ -355,7 +363,7 @@ public static class SkillLibrary
 
     // 방벽 파쇄 (보스)
     public static SkillStep BarrierBreaker_Boss() =>
-        LaunchProjectile(12f, 8f, true,
+        LaunchProjectile(19f, 48f, true,
             hit =>
             {
                 DealDamage(90f).Invoke(hit);
