@@ -28,7 +28,7 @@ MonoBehaviour:
   DefenseUpMultiplier: 1
   VulnerabilityBonus: 0
   ReflectRatio: 0
-  MaxHP: 100
+  MaxHP: 200
   CurrentHP: 100
   BaseDamage: 10
   BaseDefense: 5

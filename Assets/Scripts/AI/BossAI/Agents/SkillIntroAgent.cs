@@ -155,12 +155,31 @@ public class SkillIntroAgent : Agent
     private SkillPoolSO _currentBossPool;
     private SkillPoolSO _currentP1Pool;
     private SkillPoolSO _currentP2Pool;
+    private string _currentP1Move = "Default";
+    private string _currentP2Move = "Default";
 
     // 승률 기록
     private readonly Dictionary<string, MatchupRecord> _matchupStats = new();
     private readonly Dictionary<string, MatchupRecord> _bossPoolStats = new();
     private readonly Dictionary<string, MatchupRecord> _playerPoolStats = new();
     private string _csvPath;
+
+    // 행동 기록
+    private int _behavFrames;
+    private float _sumDistBP1, _sumDistBP2, _sumDistP1P2;
+    private int _aliveFramesP1, _aliveFramesP2, _aliveFramesBoth;
+    private float _minDistBP1, _maxDistBP1, _minDistBP2, _maxDistBP2;
+    private float _minDistP1P2, _maxDistP1P2;
+    private Vector3 _bossMinPos, _bossMaxPos;
+    private Vector3 _p1MinPos, _p1MaxPos, _p2MinPos, _p2MaxPos;
+    private int _targetSwitches;
+    private bool _prevActiveWasP1, _prevActiveValid;
+    private int _facingFrames;
+    private int _cooldownFrames;
+    private int _actIdle, _actFwd, _actLeft, _actRight;
+    private float _sumCastDist;
+    private int _castCount;
+    private float _wallTime;
 
     private class MatchupRecord
     {
@@ -201,7 +220,7 @@ public class SkillIntroAgent : Agent
         _behaviorName = bp != null ? bp.BehaviorName : "Unknown";
 
         _csvPath = System.IO.Path.Combine(Application.dataPath, "..", $"matchup_log_{_behaviorName}.csv");
-        string header = "Episode,Result,EndReason,Duration,BossPool,P1Pool,P2Pool,BossDmgDealt,PlayerDmgDealt,BossHpLeft,P1HpLeft,P2HpLeft,BossHits,BossCasts,P1Hits,P2Hits,CumulativeReward,FirstTouchP1,FirstTouchP2,P1DeathTime,P2DeathTime,BossTravelDist,UnlockedSkills";
+        string header = "Episode,Result,EndReason,Duration,BossPool,P1Pool,P2Pool,BossDmgDealt,PlayerDmgDealt,BossHpLeft,P1HpLeft,P2HpLeft,BossHits,BossCasts,P1Hits,P2Hits,CumulativeReward,FirstTouchP1,FirstTouchP2,P1DeathTime,P2DeathTime,BossTravelDist,UnlockedSkills,AvgDistBP1,MinDistBP1,MaxDistBP1,AvgDistBP2,MinDistBP2,MaxDistBP2,AvgDistP1P2,MinDistP1P2,MaxDistP1P2,BossAreaXZ,P1AreaXZ,P2AreaXZ,TargetSwitches,IdleRatio,FwdRatio,RotRatio,FacingRatio,CdWaitRatio,AvgCastDist,WallTime";
         if (!System.IO.File.Exists(_csvPath))
         {
             System.IO.File.WriteAllText(_csvPath, header + "\n");
@@ -243,12 +262,17 @@ public class SkillIntroAgent : Agent
         {
             int p1Idx = Random.Range(0, _playerProfiles.Length);
             int p2Idx = Random.Range(0, _playerProfiles.Length);
+            if (_playerProfiles.Length > 1)
+                while (p2Idx == p1Idx)
+                    p2Idx = Random.Range(0, _playerProfiles.Length);
 
             var p1Profile = _playerProfiles[p1Idx];
             var p2Profile = _playerProfiles[p2Idx];
 
             _currentP1Pool = p1Profile.SkillPool;
             _currentP2Pool = p2Profile.SkillPool;
+            _currentP1Move = p1Profile.MoveGraph != null ? p1Profile.MoveGraph.name : "Default";
+            _currentP2Move = p2Profile.MoveGraph != null ? p2Profile.MoveGraph.name : "Default";
 
             if (_p1TrainingSkillMgr != null) _p1TrainingSkillMgr.SetSkillPool(_currentP1Pool);
             if (_p2TrainingSkillMgr != null) _p2TrainingSkillMgr.SetSkillPool(_currentP2Pool);
@@ -298,7 +322,7 @@ public class SkillIntroAgent : Agent
         string boss = _currentBossPool != null ? _currentBossPool.name : "Default";
         string p1   = _currentP1Pool   != null ? _currentP1Pool.name   : "Default";
         string p2   = _currentP2Pool   != null ? _currentP2Pool.name   : "Default";
-        return $"{boss} vs {p1}+{p2}";
+        return $"{boss} vs {p1}({_currentP1Move})+{p2}({_currentP2Move})";
     }
 
     private void RecordMatchResult(bool bossWon)
@@ -329,7 +353,23 @@ public class SkillIntroAgent : Agent
         float touchP2      = _p2TouchTime > 0f ? _p2TouchTime - _episodeStartTime : -1f;
         int   unlockedSlots = _trainingSkillManager != null ? _trainingSkillManager.UnlockedCount : 0;
 
-        string csvLine = $"{_currentEpisode},{(bossWon ? "BossWin" : "BossLose")},{_endReason},{duration:F1},{bossName},{p1Name},{p2Name},{bossDmgDealt:F0},{playerDmgDealt:F0},{bossHpLeft:F2},{p1HpLeft:F2},{p2HpLeft:F2},{bossHits},{bossCasts},{p1Hits},{p2Hits},{cumReward:F3},{touchP1:F1},{touchP2:F1},{_p1DeathTime:F1},{_p2DeathTime:F1},{_bossTravelDist:F1},{unlockedSlots}";
+        float avgDP1 = _aliveFramesP1 > 0 ? _sumDistBP1 / _aliveFramesP1 : 0f;
+        float avgDP2 = _aliveFramesP2 > 0 ? _sumDistBP2 / _aliveFramesP2 : 0f;
+        float avgDP1P2 = _aliveFramesBoth > 0 ? _sumDistP1P2 / _aliveFramesBoth : 0f;
+        float mnDP1 = _minDistBP1 < float.MaxValue ? _minDistBP1 : 0f;
+        float mnDP2 = _minDistBP2 < float.MaxValue ? _minDistBP2 : 0f;
+        float mnDP1P2 = _minDistP1P2 < float.MaxValue ? _minDistP1P2 : 0f;
+        Vector3 bd = _bossMaxPos - _bossMinPos; float bossArea = bd.x * bd.z;
+        Vector3 p1d = _p1MaxPos - _p1MinPos; float p1Area = p1d.x * p1d.z;
+        Vector3 p2d = _p2MaxPos - _p2MinPos; float p2Area = p2d.x * p2d.z;
+        float idleR = _behavFrames > 0 ? (float)_actIdle / _behavFrames : 0f;
+        float fwdR = _behavFrames > 0 ? (float)_actFwd / _behavFrames : 0f;
+        float rotR = _behavFrames > 0 ? (float)(_actLeft + _actRight) / _behavFrames : 0f;
+        float faceR = _behavFrames > 0 ? (float)_facingFrames / _behavFrames : 0f;
+        float cdR = _behavFrames > 0 ? (float)_cooldownFrames / _behavFrames : 0f;
+        float avgCast = _castCount > 0 ? _sumCastDist / _castCount : 0f;
+
+        string csvLine = $"{_currentEpisode},{(bossWon ? "BossWin" : "BossLose")},{_endReason},{duration:F1},{bossName},{p1Name},{p2Name},{bossDmgDealt:F0},{playerDmgDealt:F0},{bossHpLeft:F2},{p1HpLeft:F2},{p2HpLeft:F2},{bossHits},{bossCasts},{p1Hits},{p2Hits},{cumReward:F3},{touchP1:F1},{touchP2:F1},{_p1DeathTime:F1},{_p2DeathTime:F1},{_bossTravelDist:F1},{unlockedSlots},{avgDP1:F1},{mnDP1:F1},{_maxDistBP1:F1},{avgDP2:F1},{mnDP2:F1},{_maxDistBP2:F1},{avgDP1P2:F1},{mnDP1P2:F1},{_maxDistP1P2:F1},{bossArea:F1},{p1Area:F1},{p2Area:F1},{_targetSwitches},{idleR:F3},{fwdR:F3},{rotR:F3},{faceR:F3},{cdR:F3},{avgCast:F1},{_wallTime:F2}";
         try { System.IO.File.AppendAllText(_csvPath, csvLine + "\n"); } catch { }
 
         // 매치업별 집계
@@ -408,6 +448,23 @@ public class SkillIntroAgent : Agent
         _p1DeathTime    = -1f;
         _p2DeathTime    = -1f;
         _bossTravelDist = 0f;
+
+        _behavFrames = 0;
+        _sumDistBP1 = _sumDistBP2 = _sumDistP1P2 = 0f;
+        _aliveFramesP1 = _aliveFramesP2 = _aliveFramesBoth = 0;
+        _minDistBP1 = _minDistBP2 = _minDistP1P2 = float.MaxValue;
+        _maxDistBP1 = _maxDistBP2 = _maxDistP1P2 = 0f;
+        _bossMinPos = _bossMaxPos = transform.position;
+        _p1MinPos = _p1MaxPos = _p1Object != null ? _p1Object.transform.position : Vector3.zero;
+        _p2MinPos = _p2MaxPos = _p2Object != null ? _p2Object.transform.position : Vector3.zero;
+        _targetSwitches = 0;
+        _prevActiveValid = false;
+        _facingFrames = 0;
+        _cooldownFrames = 0;
+        _actIdle = _actFwd = _actLeft = _actRight = 0;
+        _sumCastDist = 0f;
+        _castCount = 0;
+        _wallTime = 0f;
 
         CachePlayerStats();
     }
@@ -636,6 +693,9 @@ public class SkillIntroAgent : Agent
             case 3: transform.Rotate(0f,  _rotationSpeed * Time.deltaTime, 0f); break;
         }
 
+        if (moveAction == 0) _actIdle++; else if (moveAction == 1) _actFwd++; else if (moveAction == 2) _actLeft++; else _actRight++;
+        _behavFrames++;
+
         bool isMoving = moveAction == 1;
         _bossController.StateMgr?.NotifyMovementInput(isMoving);
 
@@ -685,6 +745,12 @@ public class SkillIntroAgent : Agent
 
         int hitsBefore = _skillExecutor.TotalHitCount;
         bool fired = _skillExecutor.Execute(skill, ctx);
+
+        if (fired && skill.TargetType != TargetType.Self && dist < float.MaxValue)
+        {
+            _sumCastDist += dist;
+            _castCount++;
+        }
 
         if (fired)
         {
@@ -802,6 +868,12 @@ public class SkillIntroAgent : Agent
     {
         AddReward(-_wStepPenalty);
 
+        _bossMinPos = Vector3.Min(_bossMinPos, transform.position);
+        _bossMaxPos = Vector3.Max(_bossMaxPos, transform.position);
+        bool allCd = true;
+        for (int i = 0; i < 3; i++) { if (_trainingSkillManager.CanUseSlot(i)) { allCd = false; break; } }
+        if (allCd) _cooldownFrames++;
+
         ApplyDamageRewards();
 
         if (_p1Object == null && _p2Object == null) return;
@@ -815,9 +887,22 @@ public class SkillIntroAgent : Agent
         float distP1 = _p1Object != null ? Vector3.Distance(bossPos, _p1Object.transform.position) : float.MaxValue;
         float distP2 = _p2Object != null ? Vector3.Distance(bossPos, _p2Object.transform.position) : float.MaxValue;
 
+        if (p1Alive && distP1 < float.MaxValue) { _sumDistBP1 += distP1; _minDistBP1 = Mathf.Min(_minDistBP1, distP1); _maxDistBP1 = Mathf.Max(_maxDistBP1, distP1); _aliveFramesP1++; }
+        if (p2Alive && distP2 < float.MaxValue) { _sumDistBP2 += distP2; _minDistBP2 = Mathf.Min(_minDistBP2, distP2); _maxDistBP2 = Mathf.Max(_maxDistBP2, distP2); _aliveFramesP2++; }
+        if (p1Alive && p2Alive && _p1Object != null && _p2Object != null)
+        {
+            float dp = Vector3.Distance(_p1Object.transform.position, _p2Object.transform.position);
+            _sumDistP1P2 += dp; _minDistP1P2 = Mathf.Min(_minDistP1P2, dp); _maxDistP1P2 = Mathf.Max(_maxDistP1P2, dp);
+            _aliveFramesBoth++;
+        }
+        if (_p1Object != null) { Vector3 pp = _p1Object.transform.position; _p1MinPos = Vector3.Min(_p1MinPos, pp); _p1MaxPos = Vector3.Max(_p1MaxPos, pp); }
+        if (_p2Object != null) { Vector3 pp = _p2Object.transform.position; _p2MinPos = Vector3.Min(_p2MinPos, pp); _p2MaxPos = Vector3.Max(_p2MaxPos, pp); }
+
         if (CheckProximityTouch(distP1, distP2)) return;
 
         bool    activeIsP1 = ActiveIsP1(distP1, distP2);
+        if (_prevActiveValid && _prevActiveWasP1 != activeIsP1) _targetSwitches++;
+        _prevActiveWasP1 = activeIsP1; _prevActiveValid = true;
         float   targetDist = activeIsP1 ? distP1 : distP2;
         Vector3 targetPos  = activeIsP1 ? _p1Object.transform.position : _p2Object.transform.position;
         Vector3 targetDir  = (targetPos - bossPos).normalized;
@@ -842,7 +927,10 @@ public class SkillIntroAgent : Agent
         _prevTargetDist = targetDist;
 
         if (Vector3.Dot(fwd, targetDir) > _alignDotThreshold)
+        {
             AddReward(_wAlign);
+            _facingFrames++;
+        }
 
         if (_prevPosValid)
         {
@@ -1003,6 +1091,7 @@ public class SkillIntroAgent : Agent
     {
         if (!collision.gameObject.CompareTag("Wall")) return;
         AddReward(-_wWallStayPenalty * Time.fixedDeltaTime);
+        _wallTime += Time.fixedDeltaTime;
     }
 
     // ══════════════════════════════════════════════════════════

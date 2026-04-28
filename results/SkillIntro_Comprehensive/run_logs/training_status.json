@@ -1,0 +1,65 @@
+{
+    "SkillIntro": {
+        "checkpoints": [
+            {
+                "steps": 499999,
+                "file_path": "results\\SkillIntro_Comprehensive\\SkillIntro\\SkillIntro-499999.onnx",
+                "reward": 1.3765981420874596,
+                "creation_time": 1777348163.8084714,
+                "auxillary_file_paths": [
+                    "results\\SkillIntro_Comprehensive\\SkillIntro\\SkillIntro-499999.pt"
+                ]
+            },
+            {
+                "steps": 999966,
+                "file_path": "results\\SkillIntro_Comprehensive\\SkillIntro\\SkillIntro-999966.onnx",
+                "reward": 2.2533020451664925,
+                "creation_time": 1777354558.3367987,
+                "auxillary_file_paths": [
+                    "results\\SkillIntro_Comprehensive\\SkillIntro\\SkillIntro-999966.pt"
+                ]
+            },
+            {
+                "steps": 1499959,
+                "file_path": "results\\SkillIntro_Comprehensive\\SkillIntro\\SkillIntro-1499959.onnx",
+                "reward": 1.3268517781462934,
+                "creation_time": 1777360945.4427266,
+                "auxillary_file_paths": [
+                    "results\\SkillIntro_Comprehensive\\SkillIntro\\SkillIntro-1499959.pt"
+                ]
+            },
+            {
+                "steps": 1579188,
+                "file_path": "results\\SkillIntro_Comprehensive\\SkillIntro\\SkillIntro-1579188.onnx",
+                "reward": 2.121896468102932,
+                "creation_time": 1777362098.2169302,
+                "auxillary_file_paths": [
+                    "results\\SkillIntro_Comprehensive\\SkillIntro\\SkillIntro-1579188.pt"
+                ]
+            },
+            {
+                "steps": 1849961,
+                "file_path": "results\\SkillIntro_Comprehensive\\SkillIntro\\SkillIntro-1849961.onnx",
+                "reward": 4.3235029599496295,
+                "creation_time": 1777369441.792318,
+                "auxillary_file_paths": [
+                    "results\\SkillIntro_Comprehensive\\SkillIntro\\SkillIntro-1849961.pt"
+                ]
+            }
+        ],
+        "final_checkpoint": {
+            "steps": 1849961,
+            "file_path": "results\\SkillIntro_Comprehensive\\SkillIntro.onnx",
+            "reward": 4.3235029599496295,
+            "creation_time": 1777369441.792318,
+            "auxillary_file_paths": [
+                "results\\SkillIntro_Comprehensive\\SkillIntro\\SkillIntro-1849961.pt"
+            ]
+        }
+    },
+    "metadata": {
+        "stats_format_version": "0.3.0",
+        "mlagents_version": "1.2.0.dev0",
+        "torch_version": "2.2.2+cu121"
+    }
+}
