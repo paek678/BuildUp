@@ -35,7 +35,7 @@ behaviors:
           memory: null
           goal_conditioning_type: hyper
           deterministic: false
-    init_path: null
+    init_path: results\SkillIntro_Move3\SkillIntro\checkpoint.pt
     keep_checkpoints: 5
     even_checkpoints: false
     max_steps: 5000000
@@ -67,10 +67,10 @@ engine_settings:
 environment_parameters: null
 checkpoint_settings:
   run_id: SkillIntro
-  initialize_from: null
+  initialize_from: SkillIntro_Move3
   load_model: false
-  resume: true
-  force: false
+  resume: false
+  force: true
   train_model: false
   inference: false
   results_dir: results

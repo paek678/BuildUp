@@ -33,13 +33,12 @@ public partial class CalcStrafePositionAction : Action
             bossToSelf = Vector3.forward;
 
         Vector3 rotated = Quaternion.Euler(0f, StrafeAngleStep.Value, 0f) * bossToSelf.normalized;
-        Vector3 candidate = bossPos + rotated * StrafeRadius.Value;
+        Vector3 candidate = PlayerArenaBounds.ClampToArena(bossPos + rotated * StrafeRadius.Value);
 
         if (!NavMesh.SamplePosition(candidate, out NavMeshHit hit, 2f, NavMesh.AllAreas))
         {
-            // 반대 방향 재시도
             Vector3 rotatedOpp = Quaternion.Euler(0f, -StrafeAngleStep.Value, 0f) * bossToSelf.normalized;
-            Vector3 candidate2 = bossPos + rotatedOpp * StrafeRadius.Value;
+            Vector3 candidate2 = PlayerArenaBounds.ClampToArena(bossPos + rotatedOpp * StrafeRadius.Value);
             if (!NavMesh.SamplePosition(candidate2, out hit, 2f, NavMesh.AllAreas))
             {
                 Debug.LogWarning("[CalcStrafe] NavMesh 샘플 실패");

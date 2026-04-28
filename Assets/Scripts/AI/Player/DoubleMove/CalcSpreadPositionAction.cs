@@ -31,7 +31,7 @@ public partial class CalcSpreadPositionAction : Action
         awayDir.y = 0f;
         awayDir.Normalize();
 
-        Vector3 candidate = selfPos + awayDir * (MinSpacing.Value * 1.2f);
+        Vector3 candidate = PlayerArenaBounds.ClampToArena(selfPos + awayDir * (MinSpacing.Value * 1.2f));
 
         if (!NavMesh.SamplePosition(candidate, out NavMeshHit hit, 2f, NavMesh.AllAreas))
         {

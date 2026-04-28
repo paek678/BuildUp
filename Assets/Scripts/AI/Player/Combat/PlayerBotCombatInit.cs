@@ -11,7 +11,8 @@ public class PlayerBotCombatInit : MonoBehaviour
     [Header("Blackboard 참조")]
     [SerializeField] private GameObject _ally;
 
-    [Header("Blackboard 값")]
+    [Header("Blackboard 값 (학습 모드에서는 SkillIntroAgent가 주입)")]
+    [SerializeField] private bool _overrideMovementParams = true;
     [SerializeField] private float _dangerRange;
     [SerializeField] private float _optimalMin;
     [SerializeField] private float _optimalMax;
@@ -20,6 +21,11 @@ public class PlayerBotCombatInit : MonoBehaviour
     [SerializeField] private float _strafeRadius;
     [SerializeField] private float _strafeAngleStep;
     [SerializeField] private float _minSpacing;
+    [SerializeField] private float _attackRangeMin;
+    [SerializeField] private float _attackRangeMax;
+    [SerializeField] private float _safeRangeMin;
+    [SerializeField] private float _safeRangeMax;
+    [SerializeField] private float _minFlankAngle;
 
     private NavMeshAgent _navAgent;
 
@@ -66,14 +72,22 @@ public class PlayerBotCombatInit : MonoBehaviour
         bb.SetVariableValue("Ally", _ally);
         bb.SetVariableValue("Self", gameObject);
 
-        bb.SetVariableValue("DangerRange", _dangerRange);
-        bb.SetVariableValue("OptimalMin", _optimalMin);
-        bb.SetVariableValue("OptimalMax", _optimalMax);
-        bb.SetVariableValue("FleeDistance", _fleeDistance);
-        bb.SetVariableValue("FlankRadius", _flankRadius);
-        bb.SetVariableValue("StrafeRadius", _strafeRadius);
-        bb.SetVariableValue("StrafeAngleStep", _strafeAngleStep);
-        bb.SetVariableValue("MinSpacing", _minSpacing);
+        if (_overrideMovementParams)
+        {
+            bb.SetVariableValue("DangerRange", _dangerRange);
+            bb.SetVariableValue("OptimalMin", _optimalMin);
+            bb.SetVariableValue("OptimalMax", _optimalMax);
+            bb.SetVariableValue("FleeDistance", _fleeDistance);
+            bb.SetVariableValue("FlankRadius", _flankRadius);
+            bb.SetVariableValue("StrafeRadius", _strafeRadius);
+            bb.SetVariableValue("StrafeAngleStep", _strafeAngleStep);
+            bb.SetVariableValue("MinSpacing", _minSpacing);
+            bb.SetVariableValue("AttackRangeMin", _attackRangeMin);
+            bb.SetVariableValue("AttackRangeMax", _attackRangeMax);
+            bb.SetVariableValue("SafeRangeMin", _safeRangeMin);
+            bb.SetVariableValue("SafeRangeMax", _safeRangeMax);
+            bb.SetVariableValue("MinFlankAngle", _minFlankAngle);
+        }
 
         _behaviorAgent.enabled = true;
 

@@ -1,5 +1,7 @@
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.AI;
+using Unity.Behavior;
 using Unity.MLAgents;
 using Unity.MLAgents.Actuators;
 using Unity.MLAgents.Sensors;
@@ -39,6 +41,34 @@ public class SkillIntroAgent : Agent
     [Header("플레이어 스킬 분배")]
     [SerializeField] private TrainingSkillManager _p1TrainingSkillMgr;
     [SerializeField] private TrainingSkillManager _p2TrainingSkillMgr;
+
+    [Header("스킬풀 랜덤 분배")]
+    [SerializeField] private SkillPoolSO[] _bossSkillPools;
+    [SerializeField] private PlayerProfile[] _playerProfiles;
+    [SerializeField] private int _statsLogInterval = 50;
+
+    [System.Serializable]
+    public struct PlayerProfile
+    {
+        public SkillPoolSO SkillPool;
+        public BehaviorGraph MoveGraph;
+        [Header("이동 파라미터")]
+        public float DangerRange;
+        public float OptimalMin;
+        public float OptimalMax;
+        public float FleeDistance;
+        public float FlankRadius;
+        public float StrafeRadius;
+        public float StrafeAngleStep;
+        public float MinSpacing;
+        [Header("거리 전환 (AdjustRange용)")]
+        public float AttackRangeMin;
+        public float AttackRangeMax;
+        public float SafeRangeMin;
+        public float SafeRangeMax;
+        [Header("협공 (IsFlankAngleLow용)")]
+        public float MinFlankAngle;
+    }
 
     [Header("더블 터치")]
     [SerializeField] private float _proximityRadius       = 5f;
@@ -89,6 +119,13 @@ public class SkillIntroAgent : Agent
     private bool     _prevPosValid;
     private int      _currentEpisode;
 
+    // 확장 기록용
+    private string _endReason;
+    private float  _p1DeathTime;
+    private float  _p2DeathTime;
+    private float  _bossTravelDist;
+    private string _behaviorName;
+
     // 더블 터치 추적
     private bool  _p1Touched;
     private bool  _p2Touched;
@@ -114,6 +151,31 @@ public class SkillIntroAgent : Agent
     private ProjectilePool     _projectilePool;
     private PersistentAreaPool _areaPool;
 
+    // 스킬풀 랜덤 분배 추적
+    private SkillPoolSO _currentBossPool;
+    private SkillPoolSO _currentP1Pool;
+    private SkillPoolSO _currentP2Pool;
+
+    // 승률 기록
+    private readonly Dictionary<string, MatchupRecord> _matchupStats = new();
+    private readonly Dictionary<string, MatchupRecord> _bossPoolStats = new();
+    private readonly Dictionary<string, MatchupRecord> _playerPoolStats = new();
+    private string _csvPath;
+
+    private class MatchupRecord
+    {
+        public int Wins;
+        public int Total;
+        public float TotalDuration;
+        public float TotalBossDmg;
+        public float TotalPlayerDmg;
+
+        public float WinRate => Total > 0 ? (float)Wins / Total * 100f : 0f;
+        public float AvgDuration => Total > 0 ? TotalDuration / Total : 0f;
+        public float AvgBossDmg => Total > 0 ? TotalBossDmg / Total : 0f;
+        public float AvgPlayerDmg => Total > 0 ? TotalPlayerDmg / Total : 0f;
+    }
+
     // ══════════════════════════════════════════════════════════
     // 초기화
     // ══════════════════════════════════════════════════════════
@@ -134,6 +196,21 @@ public class SkillIntroAgent : Agent
         _bossController.TrainingMode = true;
         _skillManager.SetAutoCast(false);
         _skillManager.RoundRobinEnabled = true;
+
+        var bp = GetComponent<Unity.MLAgents.Policies.BehaviorParameters>();
+        _behaviorName = bp != null ? bp.BehaviorName : "Unknown";
+
+        _csvPath = System.IO.Path.Combine(Application.dataPath, "..", $"matchup_log_{_behaviorName}.csv");
+        string header = "Episode,Result,EndReason,Duration,BossPool,P1Pool,P2Pool,BossDmgDealt,PlayerDmgDealt,BossHpLeft,P1HpLeft,P2HpLeft,BossHits,BossCasts,P1Hits,P2Hits,CumulativeReward,FirstTouchP1,FirstTouchP2,P1DeathTime,P2DeathTime,BossTravelDist,UnlockedSkills";
+        if (!System.IO.File.Exists(_csvPath))
+        {
+            System.IO.File.WriteAllText(_csvPath, header + "\n");
+        }
+        else
+        {
+            string separator = $"\n# === Session {System.DateTime.Now:yyyy-MM-dd HH:mm:ss} ===\n{header}\n";
+            try { System.IO.File.AppendAllText(_csvPath, separator); } catch { }
+        }
     }
 
     public override void OnEpisodeBegin()
@@ -141,6 +218,7 @@ public class SkillIntroAgent : Agent
         if (_renderer != null) _renderer.material.color = Color.red;
 
         CleanupPreviousEpisode();
+        AssignRandomPools();
         SpawnObjects();
         ResetEpisodeState();
 
@@ -151,6 +229,152 @@ public class SkillIntroAgent : Agent
     {
         if (_projectilePool != null) _projectilePool.ReturnAll();
         if (_areaPool != null)       _areaPool.ReturnAll();
+    }
+
+    private void AssignRandomPools()
+    {
+        if (_bossSkillPools != null && _bossSkillPools.Length > 0)
+        {
+            _currentBossPool = _bossSkillPools[Random.Range(0, _bossSkillPools.Length)];
+            _trainingSkillManager.SetSkillPool(_currentBossPool);
+        }
+
+        if (_playerProfiles != null && _playerProfiles.Length > 0)
+        {
+            int p1Idx = Random.Range(0, _playerProfiles.Length);
+            int p2Idx = Random.Range(0, _playerProfiles.Length);
+
+            var p1Profile = _playerProfiles[p1Idx];
+            var p2Profile = _playerProfiles[p2Idx];
+
+            _currentP1Pool = p1Profile.SkillPool;
+            _currentP2Pool = p2Profile.SkillPool;
+
+            if (_p1TrainingSkillMgr != null) _p1TrainingSkillMgr.SetSkillPool(_currentP1Pool);
+            if (_p2TrainingSkillMgr != null) _p2TrainingSkillMgr.SetSkillPool(_currentP2Pool);
+
+            if (p1Profile.MoveGraph != null) SwapPlayerGraph(_p1Object, p1Profile);
+            if (p2Profile.MoveGraph != null) SwapPlayerGraph(_p2Object, p2Profile);
+        }
+    }
+
+    private void SwapPlayerGraph(GameObject player, PlayerProfile profile)
+    {
+        if (player == null) return;
+
+        var agent = player.GetComponent<BehaviorGraphAgent>();
+        if (agent == null) return;
+
+        agent.Graph = profile.MoveGraph;
+        agent.Init();
+
+        var nav = player.GetComponent<NavMeshAgent>();
+        agent.SetVariableValue("Boss", gameObject);
+        agent.SetVariableValue("Self", player);
+        agent.SetVariableValue("Agent", nav);
+
+        GameObject ally = (player == _p1Object) ? _p2Object : _p1Object;
+        agent.SetVariableValue("Ally", ally);
+
+        agent.SetVariableValue("DangerRange", profile.DangerRange);
+        agent.SetVariableValue("OptimalMin", profile.OptimalMin);
+        agent.SetVariableValue("OptimalMax", profile.OptimalMax);
+        agent.SetVariableValue("FleeDistance", profile.FleeDistance);
+        agent.SetVariableValue("FlankRadius", profile.FlankRadius);
+        agent.SetVariableValue("StrafeRadius", profile.StrafeRadius);
+        agent.SetVariableValue("StrafeAngleStep", profile.StrafeAngleStep);
+        agent.SetVariableValue("MinSpacing", profile.MinSpacing);
+        agent.SetVariableValue("AttackRangeMin", profile.AttackRangeMin);
+        agent.SetVariableValue("AttackRangeMax", profile.AttackRangeMax);
+        agent.SetVariableValue("SafeRangeMin", profile.SafeRangeMin);
+        agent.SetVariableValue("SafeRangeMax", profile.SafeRangeMax);
+        agent.SetVariableValue("MinFlankAngle", profile.MinFlankAngle);
+
+        agent.Restart();
+    }
+
+    private string GetMatchupKey()
+    {
+        string boss = _currentBossPool != null ? _currentBossPool.name : "Default";
+        string p1   = _currentP1Pool   != null ? _currentP1Pool.name   : "Default";
+        string p2   = _currentP2Pool   != null ? _currentP2Pool.name   : "Default";
+        return $"{boss} vs {p1}+{p2}";
+    }
+
+    private void RecordMatchResult(bool bossWon)
+    {
+        float duration = Time.time - _episodeStartTime;
+        string bossName  = _currentBossPool != null ? _currentBossPool.name : "Default";
+        string p1Name    = _currentP1Pool   != null ? _currentP1Pool.name   : "Default";
+        string p2Name    = _currentP2Pool   != null ? _currentP2Pool.name   : "Default";
+
+        float bossHpLeft = _bossController.StatMgr != null ? _bossController.StatMgr.GetHPPercent() : 0f;
+        float p1HpLeft   = _p1StatManager != null ? _p1StatManager.GetHPPercent() : 0f;
+        float p2HpLeft   = _p2StatManager != null ? _p2StatManager.GetHPPercent() : 0f;
+
+        int bossHits  = _skillExecutor.TotalHitCount;
+        int bossCasts = _skillExecutor.TotalUseCount;
+        int p1Hits    = _p1SkillExecutor != null ? _p1SkillExecutor.TotalHitCount : 0;
+        int p2Hits    = _p2SkillExecutor != null ? _p2SkillExecutor.TotalHitCount : 0;
+
+        float bossMaxHp = _bossController.StatMgr != null ? _bossController.StatMgr.GetMaxHP() : 1f;
+        float p1MaxHp   = _p1StatManager != null ? _p1StatManager.GetMaxHP() : 1f;
+        float p2MaxHp   = _p2StatManager != null ? _p2StatManager.GetMaxHP() : 1f;
+
+        float bossDmgDealt   = (1f - p1HpLeft) * p1MaxHp + (1f - p2HpLeft) * p2MaxHp;
+        float playerDmgDealt = (1f - bossHpLeft) * bossMaxHp;
+
+        float cumReward    = GetCumulativeReward();
+        float touchP1      = _p1TouchTime > 0f ? _p1TouchTime - _episodeStartTime : -1f;
+        float touchP2      = _p2TouchTime > 0f ? _p2TouchTime - _episodeStartTime : -1f;
+        int   unlockedSlots = _trainingSkillManager != null ? _trainingSkillManager.UnlockedCount : 0;
+
+        string csvLine = $"{_currentEpisode},{(bossWon ? "BossWin" : "BossLose")},{_endReason},{duration:F1},{bossName},{p1Name},{p2Name},{bossDmgDealt:F0},{playerDmgDealt:F0},{bossHpLeft:F2},{p1HpLeft:F2},{p2HpLeft:F2},{bossHits},{bossCasts},{p1Hits},{p2Hits},{cumReward:F3},{touchP1:F1},{touchP2:F1},{_p1DeathTime:F1},{_p2DeathTime:F1},{_bossTravelDist:F1},{unlockedSlots}";
+        try { System.IO.File.AppendAllText(_csvPath, csvLine + "\n"); } catch { }
+
+        // 매치업별 집계
+        string matchupKey = GetMatchupKey();
+        UpdateRecord(_matchupStats, matchupKey, bossWon, duration, bossDmgDealt, playerDmgDealt);
+        UpdateRecord(_bossPoolStats, bossName, bossWon, duration, bossDmgDealt, playerDmgDealt);
+        UpdateRecord(_playerPoolStats, p1Name, bossWon, duration, bossDmgDealt, playerDmgDealt);
+        UpdateRecord(_playerPoolStats, p2Name, bossWon, duration, bossDmgDealt, playerDmgDealt);
+
+        if (_currentEpisode > 0 && _currentEpisode % _statsLogInterval == 0)
+            LogMatchupStats();
+    }
+
+    private void UpdateRecord(Dictionary<string, MatchupRecord> dict, string key, bool bossWon, float duration, float bossDmg, float playerDmg)
+    {
+        if (!dict.TryGetValue(key, out var rec))
+        {
+            rec = new MatchupRecord();
+            dict[key] = rec;
+        }
+        if (bossWon) rec.Wins++;
+        rec.Total++;
+        rec.TotalDuration += duration;
+        rec.TotalBossDmg += bossDmg;
+        rec.TotalPlayerDmg += playerDmg;
+    }
+
+    private void LogMatchupStats()
+    {
+        var sb = new System.Text.StringBuilder();
+
+        sb.AppendLine($"[MatchupStats] EP#{_currentEpisode} ══════════════════════════");
+        sb.AppendLine("── 보스 풀별 승률 ──");
+        foreach (var kvp in _bossPoolStats)
+            sb.AppendLine($"  {kvp.Key,-20} | 승률:{kvp.Value.WinRate,5:F1}% ({kvp.Value.Wins}/{kvp.Value.Total}) | 평균:{kvp.Value.AvgDuration:F1}s | 보스딜:{kvp.Value.AvgBossDmg:F0} 피딜:{kvp.Value.AvgPlayerDmg:F0}");
+
+        sb.AppendLine("── 플레이어 풀별 (상대한 보스 기준) ──");
+        foreach (var kvp in _playerPoolStats)
+            sb.AppendLine($"  {kvp.Key,-20} | 보스승률:{kvp.Value.WinRate,5:F1}% ({kvp.Value.Wins}/{kvp.Value.Total}) | 평균:{kvp.Value.AvgDuration:F1}s");
+
+        sb.AppendLine("── 매치업별 상세 ──");
+        foreach (var kvp in _matchupStats)
+            sb.AppendLine($"  {kvp.Key} | 보스승:{kvp.Value.WinRate,5:F1}% ({kvp.Value.Wins}/{kvp.Value.Total}) | 평균:{kvp.Value.AvgDuration:F1}s | 보스딜:{kvp.Value.AvgBossDmg:F0} 피딜:{kvp.Value.AvgPlayerDmg:F0}");
+
+        Debug.Log(sb.ToString());
     }
 
     private void ResetEpisodeState()
@@ -179,6 +403,11 @@ public class SkillIntroAgent : Agent
         _p2TouchTime     = -1f;
         _p1DeathHandled  = false;
         _p2DeathHandled  = false;
+
+        _endReason      = "Unknown";
+        _p1DeathTime    = -1f;
+        _p2DeathTime    = -1f;
+        _bossTravelDist = 0f;
 
         CachePlayerStats();
     }
@@ -429,10 +658,13 @@ public class SkillIntroAgent : Agent
 
         Transform activeTarget = GetActiveTarget();
 
-        // 살아있는 타겟이 없으면 스킬 사용 자체를 차단 + 페널티
         if (activeTarget == null && skill.TargetType != TargetType.Self)
         {
-            AddReward(-_hitDeadPlayerPenalty);
+            // 양쪽 전멸 직후 프레임이면 페널티 스킵 (승리 보상과 충돌 방지)
+            bool bothDead = (_p1StatManager != null && !_p1StatManager.IsAlive)
+                         && (_p2StatManager != null && !_p2StatManager.IsAlive);
+            if (!bothDead)
+                AddReward(-_hitDeadPlayerPenalty);
             return;
         }
 
@@ -615,6 +847,7 @@ public class SkillIntroAgent : Agent
         if (_prevPosValid)
         {
             float moveDelta = Vector3.Distance(bossPos, _prevBossPos);
+            _bossTravelDist += moveDelta;
             if (moveDelta < _minMoveDelta)
                 AddReward(-_wIdlePenalty);
         }
@@ -682,8 +915,10 @@ public class SkillIntroAgent : Agent
     {
         if (!_bossController.IsAlive)
         {
-            Debug.Log($"[SkillIntro] EP#{_currentEpisode} 종료: 보스 사망 (elapsed={Time.time - _episodeStartTime:F1}s)");
+            Debug.Log($"[SkillIntro] EP#{_currentEpisode} 종료: 보스 사망 (elapsed={Time.time - _episodeStartTime:F1}s) | {GetMatchupKey()}");
             AddReward(-_bossDiedPenalty);
+            _endReason = "BossDeath";
+            RecordMatchResult(false);
             if (_renderer != null) _renderer.material.color = Color.black;
             EndEpisode();
             return;
@@ -695,7 +930,8 @@ public class SkillIntroAgent : Agent
         if (p1Dead && !_p1DeathHandled)
         {
             _p1DeathHandled = true;
-            Debug.Log($"[SkillIntro] EP#{_currentEpisode} P1 사망 (elapsed={Time.time - _episodeStartTime:F1}s)");
+            _p1DeathTime = Time.time - _episodeStartTime;
+            Debug.Log($"[SkillIntro] EP#{_currentEpisode} P1 사망 (elapsed={_p1DeathTime:F1}s)");
             AddReward(_playerKilledReward);
             if (!_p1Touched) { _p1Touched = true; _p1TouchTime = Time.time; }
             _prevTargetDist = -1f;
@@ -704,7 +940,8 @@ public class SkillIntroAgent : Agent
         if (p2Dead && !_p2DeathHandled)
         {
             _p2DeathHandled = true;
-            Debug.Log($"[SkillIntro] EP#{_currentEpisode} P2 사망 (elapsed={Time.time - _episodeStartTime:F1}s)");
+            _p2DeathTime = Time.time - _episodeStartTime;
+            Debug.Log($"[SkillIntro] EP#{_currentEpisode} P2 사망 (elapsed={_p2DeathTime:F1}s)");
             AddReward(_playerKilledReward);
             if (!_p2Touched) { _p2Touched = true; _p2TouchTime = Time.time; }
             _prevTargetDist = -1f;
@@ -713,8 +950,10 @@ public class SkillIntroAgent : Agent
 
         if (p1Dead && p2Dead)
         {
-            Debug.Log($"[SkillIntro] EP#{_currentEpisode} 종료: 양쪽 플레이어 사망 (elapsed={Time.time - _episodeStartTime:F1}s)");
+            Debug.Log($"[SkillIntro] EP#{_currentEpisode} 종료: 양쪽 플레이어 사망 (elapsed={Time.time - _episodeStartTime:F1}s) | {GetMatchupKey()}");
             AddReward(_allKilledReward);
+            _endReason = "AllPlayerDeath";
+            RecordMatchResult(true);
             if (_renderer != null) _renderer.material.color = Color.green;
             EndEpisode();
             return;
@@ -722,8 +961,10 @@ public class SkillIntroAgent : Agent
 
         if (transform.position.y < _outOfBoundsY)
         {
-            Debug.Log($"[SkillIntro] EP#{_currentEpisode} 종료: 맵 밖 추락 y={transform.position.y:F1} (elapsed={Time.time - _episodeStartTime:F1}s)");
+            Debug.Log($"[SkillIntro] EP#{_currentEpisode} 종료: 맵 밖 추락 y={transform.position.y:F1} (elapsed={Time.time - _episodeStartTime:F1}s) | {GetMatchupKey()}");
             AddReward(_outOfBoundsPenalty);
+            _endReason = "OutOfBounds";
+            RecordMatchResult(false);
             if (_renderer != null) _renderer.material.color = Color.gray;
             EndEpisode();
             return;
@@ -733,13 +974,15 @@ public class SkillIntroAgent : Agent
         {
             string touchInfo = _p1Touched && _p2Touched ? "양쪽터치"
                 : _p1Touched ? "P1만터치" : _p2Touched ? "P2만터치" : "터치없음";
-            Debug.Log($"[SkillIntro] EP#{_currentEpisode} 종료: 시간초과 {_episodeMaxDuration}s ({touchInfo})");
+            Debug.Log($"[SkillIntro] EP#{_currentEpisode} 종료: 시간초과 {_episodeMaxDuration}s ({touchInfo}) | {GetMatchupKey()}");
 
             if (!_p1Touched && !_p2Touched)
                 AddReward(_noTouchPenalty);
             else if (_p1Touched ^ _p2Touched)
                 AddReward(_partialTouchPenalty);
 
+            _endReason = "Timeout";
+            RecordMatchResult(false);
             if (_renderer != null) _renderer.material.color = Color.magenta;
             EndEpisode();
         }

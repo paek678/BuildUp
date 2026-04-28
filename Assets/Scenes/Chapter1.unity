@@ -6375,13 +6375,79 @@ MonoBehaviour:
   _skillExecutor: {fileID: 0}
   _p1TrainingSkillMgr: {fileID: 2004071447}
   _p2TrainingSkillMgr: {fileID: 1994669195}
-  _proximityRadius: 5
-  _touchReward: 0.2
-  _fastDoubleTouchBonus: 0.3
-  _doubleTouchWindow: 3
+  _bossSkillPools:
+  - {fileID: 11400000, guid: a1b2c3d4e5f60005ab0123456789cde5, type: 2}
+  - {fileID: 11400000, guid: a1b2c3d4e5f60006ab0123456789cde6, type: 2}
+  - {fileID: 11400000, guid: a1b2c3d4e5f60007ab0123456789cde7, type: 2}
+  _playerProfiles:
+  - SkillPool: {fileID: 11400000, guid: a1b2c3d4e5f60001ab0123456789cde1, type: 2}
+    MoveGraph: {fileID: 4186811738917985622, guid: fa27213a173a42fca32ed38494101c63, type: 2}
+    DangerRange: 8
+    OptimalMin: 10
+    OptimalMax: 18
+    FleeDistance: 8
+    FlankRadius: 12
+    StrafeRadius: 12
+    StrafeAngleStep: 30
+    MinSpacing: 6
+    AttackRangeMin: 10
+    AttackRangeMax: 18
+    SafeRangeMin: 10
+    SafeRangeMax: 18
+    MinFlankAngle: 0
+  - SkillPool: {fileID: 11400000, guid: a1b2c3d4e5f60002ab0123456789cde2, type: 2}
+    MoveGraph: {fileID: 4186811738917985622, guid: 5459bb6c7c7449a9848805de9744b0b0, type: 2}
+    DangerRange: 15
+    OptimalMin: 25
+    OptimalMax: 38
+    FleeDistance: 12
+    FlankRadius: 30
+    StrafeRadius: 30
+    StrafeAngleStep: 15
+    MinSpacing: 6
+    AttackRangeMin: 16
+    AttackRangeMax: 25
+    SafeRangeMin: 35
+    SafeRangeMax: 45
+    MinFlankAngle: 0
+  - SkillPool: {fileID: 11400000, guid: a1b2c3d4e5f60003ab0123456789cde3, type: 2}
+    MoveGraph: {fileID: 4186811738917985622, guid: 899951f6215849228b061ff5f856326b, type: 2}
+    DangerRange: 10
+    OptimalMin: 15
+    OptimalMax: 25
+    FleeDistance: 10
+    FlankRadius: 20
+    StrafeRadius: 20
+    StrafeAngleStep: 25
+    MinSpacing: 6
+    AttackRangeMin: 12
+    AttackRangeMax: 20
+    SafeRangeMin: 22
+    SafeRangeMax: 30
+    MinFlankAngle: 0
+  - SkillPool: {fileID: 11400000, guid: a1b2c3d4e5f60004ab0123456789cde4, type: 2}
+    MoveGraph: {fileID: 4186811738917985622, guid: 0e72a85d1c6644b99daed9423ed0b678, type: 2}
+    DangerRange: 12
+    OptimalMin: 18
+    OptimalMax: 28
+    FleeDistance: 10
+    FlankRadius: 22
+    StrafeRadius: 22
+    StrafeAngleStep: 20
+    MinSpacing: 6
+    AttackRangeMin: 18
+    AttackRangeMax: 28
+    SafeRangeMin: 18
+    SafeRangeMax: 28
+    MinFlankAngle: 60
+  _statsLogInterval: 50
+  _proximityRadius: 0
+  _touchReward: 0
+  _fastDoubleTouchBonus: 0
+  _doubleTouchWindow: 0
   _touchEndEnabled: 0
-  _noTouchPenalty: -0.5
-  _partialTouchPenalty: -0.2
+  _noTouchPenalty: 0
+  _partialTouchPenalty: 0
   _wStepPenalty: 0.001
   _wFireReward: 0
   _wMissPenalty: 0.05
@@ -6404,6 +6470,7 @@ MonoBehaviour:
   _bossDiedPenalty: 1
   _allKilledReward: 1
   _playerKilledReward: 0.3
+  _hitDeadPlayerPenalty: 0.3
 --- !u!1 &1776433597
 GameObject:
   m_ObjectHideFlags: 0
@@ -7220,6 +7287,7 @@ MonoBehaviour:
   _behaviorAgent: {fileID: 1994669180}
   _gameManager: {fileID: 1819722034}
   _ally: {fileID: 2004071421}
+  _overrideMovementParams: 1
   _dangerRange: 15
   _optimalMin: 30
   _optimalMax: 40
@@ -7228,6 +7296,11 @@ MonoBehaviour:
   _strafeRadius: 35
   _strafeAngleStep: 15
   _minSpacing: 8
+  _attackRangeMin: 0
+  _attackRangeMax: 0
+  _safeRangeMin: 0
+  _safeRangeMax: 0
+  _minFlankAngle: 0
 --- !u!114 &1994669195
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -7520,6 +7593,7 @@ MonoBehaviour:
   _behaviorAgent: {fileID: 0}
   _gameManager: {fileID: 1819722034}
   _ally: {fileID: 1994669177}
+  _overrideMovementParams: 1
   _dangerRange: 8
   _optimalMin: 10
   _optimalMax: 16
@@ -7528,6 +7602,11 @@ MonoBehaviour:
   _strafeRadius: 13
   _strafeAngleStep: 25
   _minSpacing: 5
+  _attackRangeMin: 0
+  _attackRangeMax: 0
+  _safeRangeMin: 0
+  _safeRangeMax: 0
+  _minFlankAngle: 0
 --- !u!114 &2004071447
 MonoBehaviour:
   m_ObjectHideFlags: 0

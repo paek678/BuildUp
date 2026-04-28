@@ -2,58 +2,58 @@
     "SkillIntro": {
         "checkpoints": [
             {
-                "steps": 594767,
-                "file_path": "results\\SkillIntro_Move3\\SkillIntro\\SkillIntro-594767.onnx",
-                "reward": -16.98366640508175,
-                "creation_time": 1777172080.8342853,
+                "steps": 3000047,
+                "file_path": "results\\SkillIntro_Move3\\SkillIntro\\SkillIntro-3000047.onnx",
+                "reward": -27.353465721011162,
+                "creation_time": 1777224814.3226666,
                 "auxillary_file_paths": [
-                    "results\\SkillIntro_Move3\\SkillIntro\\SkillIntro-594767.pt"
+                    "results\\SkillIntro_Move3\\SkillIntro\\SkillIntro-3000047.pt"
                 ]
             },
             {
-                "steps": 617359,
-                "file_path": "results\\SkillIntro_Move3\\SkillIntro\\SkillIntro-617359.onnx",
-                "reward": -11.656283257901668,
-                "creation_time": 1777173729.3341277,
+                "steps": 3109966,
+                "file_path": "results\\SkillIntro_Move3\\SkillIntro\\SkillIntro-3109966.onnx",
+                "reward": -10.5538072694093,
+                "creation_time": 1777258492.182443,
                 "auxillary_file_paths": [
-                    "results\\SkillIntro_Move3\\SkillIntro\\SkillIntro-617359.pt"
+                    "results\\SkillIntro_Move3\\SkillIntro\\SkillIntro-3109966.pt"
                 ]
             },
             {
-                "steps": 923397,
-                "file_path": "results\\SkillIntro_Move3\\SkillIntro\\SkillIntro-923397.onnx",
-                "reward": -53.08658849596977,
-                "creation_time": 1777177757.1044016,
+                "steps": 3499963,
+                "file_path": "results\\SkillIntro_Move3\\SkillIntro\\SkillIntro-3499963.onnx",
+                "reward": -52.63787656277418,
+                "creation_time": 1777266395.8765116,
                 "auxillary_file_paths": [
-                    "results\\SkillIntro_Move3\\SkillIntro\\SkillIntro-923397.pt"
+                    "results\\SkillIntro_Move3\\SkillIntro\\SkillIntro-3499963.pt"
                 ]
             },
             {
-                "steps": 999945,
-                "file_path": "results\\SkillIntro_Move3\\SkillIntro\\SkillIntro-999945.onnx",
-                "reward": -70.20382147729397,
-                "creation_time": 1777179057.101367,
+                "steps": 3720821,
+                "file_path": "results\\SkillIntro_Move3\\SkillIntro\\SkillIntro-3720821.onnx",
+                "reward": -6.326555399845044,
+                "creation_time": 1777269427.0778801,
                 "auxillary_file_paths": [
-                    "results\\SkillIntro_Move3\\SkillIntro\\SkillIntro-999945.pt"
+                    "results\\SkillIntro_Move3\\SkillIntro\\SkillIntro-3720821.pt"
                 ]
             },
             {
-                "steps": 1141163,
-                "file_path": "results\\SkillIntro_Move3\\SkillIntro\\SkillIntro-1141163.onnx",
-                "reward": -23.97795047238469,
-                "creation_time": 1777181123.4250023,
+                "steps": 3730013,
+                "file_path": "results\\SkillIntro_Move3\\SkillIntro\\SkillIntro-3730013.onnx",
+                "reward": -8.736098797619343,
+                "creation_time": 1777284377.6717103,
                 "auxillary_file_paths": [
-                    "results\\SkillIntro_Move3\\SkillIntro\\SkillIntro-1141163.pt"
+                    "results\\SkillIntro_Move3\\SkillIntro\\SkillIntro-3730013.pt"
                 ]
             }
         ],
         "final_checkpoint": {
-            "steps": 1141163,
+            "steps": 3730013,
             "file_path": "results\\SkillIntro_Move3\\SkillIntro.onnx",
-            "reward": -23.97795047238469,
-            "creation_time": 1777181123.4250023,
+            "reward": -8.736098797619343,
+            "creation_time": 1777284377.6717103,
             "auxillary_file_paths": [
-                "results\\SkillIntro_Move3\\SkillIntro\\SkillIntro-1141163.pt"
+                "results\\SkillIntro_Move3\\SkillIntro\\SkillIntro-3730013.pt"
             ]
         }
     },

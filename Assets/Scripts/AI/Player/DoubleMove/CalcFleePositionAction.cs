@@ -39,7 +39,7 @@ public partial class CalcFleePositionAction : Action
         {
             float t = (sampleCount == 1) ? 0f : i / (float)(sampleCount - 1) * 2f - 1f;
             Vector3 dir = Quaternion.Euler(0f, t * spreadAngle, 0f) * awayDir;
-            Vector3 candidate = selfPos + dir * FleeDistance.Value;
+            Vector3 candidate = PlayerArenaBounds.ClampToArena(selfPos + dir * FleeDistance.Value);
 
             if (!NavMesh.SamplePosition(candidate, out NavMeshHit hit, sampleRadius, NavMesh.AllAreas))
                 continue;

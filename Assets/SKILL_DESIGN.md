@@ -93,3 +93,34 @@
 | 유틸/제어 | 봉쇄 사슬 | 4방향 원거리 패턴 | 사거리 7m / 4방향 | 10초 | 회피 강제 | `33.LaunchProjectile(7,11,false,false,[1.DealDamage(60), 10.ApplyHitStun(0.10), 14.ApplySilence(0.7)])` |
 | 공격 | 방벽 파쇄 | 직선 원거리 패턴 | 사거리 8m / 직선 폭 0.8m | 9초 | 실드 카운터 | `33.LaunchProjectile(8,12,true,false,[1.DealDamage(90), 23.DealShieldBreakDamage(70,1.5), 18.ApplyDefenseDown(4,8)])` |
 | 공격 | 파열 탄창 | 8방향 폭발 패턴 | 사거리 7m / 폭발 반경 1.8m | 9초 | 공간 압박 | `31.ApplyInArea(0.7,원,[33.LaunchProjectile(7,10,false,true,[13.ApplyVulnerability(2.5,6), 1.DealDamage(75)])])` `29.TriggerOnCondition(NoHit,[31.ApplyInArea(1.8,원,[33.LaunchProjectile(7,10,false,true,[1.DealDamage(75)])])])` |
+
+---
+
+## 학습용 스킬풀 (SkillPoolSO)
+
+> 경로: `Assets/ScriptableObjects/Skills/`
+> TrainingSkillManager가 에피소드마다 풀에서 셔플 → 점진 해금 (1→3)
+
+### 플레이어 스킬풀 (4종)
+
+| 풀 이름 | 컨셉 | 스킬 구성 |
+|---------|------|-----------|
+| **PlayerMeleeBurst** | 근접 폭딜 — 붙어서 빠르게 녹이기 | ExecutionSpike(125), CrushingBarrage(34x5+54sb), CollapseRoar(95), BarrierBreaker(105+84sb), FortressArmor(90) |
+| **PlayerRangedKiter** | 원거리 견제 — 거리 유지하며 지속 딜 | PiercingShot(165), RuptureMagazine(135), ErosionField(DoT 8/s), HuntingMark(80), SealChain(70) |
+| **PlayerHybridSurvivor** | 생존 균형 — 공격+생존 하이브리드 | ExecutionSpike(125), PiercingShot(165), FortressArmor(90), SurvivalPulse(6%힐), OverchargeMode(버프) |
+| **PlayerCCDebuffer** | CC 디버프 — 제어+약화 특화 | SealChain(70), HuntingMark(80), CollapseRoar(95), ErosionField(DoT 8/s), RuptureMagazine(135) |
+
+### 보스 스킬풀 (3종)
+
+| 풀 이름 | 컨셉 | 스킬 구성 |
+|---------|------|-----------|
+| **BossMeleeAggro** | 근접 압살 — 붙어서 밀어붙이기 | ExecutionSpike_Boss(118), CrushingBarrage_Boss(32x5+55sb), CollapseRoar_Boss(88), FortressArmor_Boss(82), OverchargeMode_Boss(버프) |
+| **BossRangedZoner** | 원거리 공간 압박 — 거리 두고 견제 | BarrierBreaker_Boss(90+70sb), MarkWave_Boss(70), ErosionField_Boss(DoT 7/s), CollapseRoar_Boss(88), SurvivalPulse_Boss(5%힐) |
+| **BossTankSustain** | 생존 지구전 — 오래 버티며 소모전 | FortressArmor_Boss(82), SurvivalPulse_Boss(5%힐), OverchargeMode_Boss(버프), ErosionField_Boss(DoT 7/s), ExecutionSpike_Boss(118) |
+
+### 기존 통합 풀 (레거시)
+
+| 풀 이름 | 대상 | 스킬 수 | 비고 |
+|---------|------|---------|------|
+| **TrainingCombatSkillPool** | 보스 | 11종 | 미구현 2종(RuptureMagazine_Boss, SealChain_Boss) 포함 |
+| **PlayerTrainingSkillPool** | 플레이어 | 12종 | 전체 플레이어 스킬 통합 |

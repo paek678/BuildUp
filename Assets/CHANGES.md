@@ -5,6 +5,92 @@
 
 ---
 
+## 플레이스타일별 BehaviorGraph 노드 분화 + 거리 전환 / 협공 각도 시스템
+**경로:** `Assets/Scripts/AI/Player/DoubleMove/AdjustRangeBySkillState.cs` (신규), `Assets/Scripts/AI/Player/DoubleMove/IsFlankAngleLowCondition.cs` (신규), `Assets/Scripts/AI/BossAI/Agents/SkillIntroAgent.cs`, `Assets/Scripts/AI/Player/Combat/PlayerBotCombatInit.cs`
+**변경일:** 2026-04-27
+
+### 변경 사유
+- 4종 BehaviorGraph가 동일 노드 구조 → 플레이스타일별 실제 행동 분화 필요
+- 회피형(RangedKiter)이 스킬 쿨다운 중에도 보스 근처에 머무르는 문제
+- CCDebuffer의 플랭크 트리거가 "보스 시선" 기준이라 협공 판정 부정확
+
+### 변경 내용
+- **AdjustRangeBySkillState.cs** (신규) — Action 노드. SkillManager.CanUse() 확인 후 OptimalMin/Max를 공격거리↔안전거리로 전환. SkillManager 1회 캐싱, 없으면 현재 값 유지+Success (Codex 피드백 반영)
+- **IsFlankAngleLowCondition.cs** (신규) — Condition 노드. Boss-Self-Ally 사잇각이 MinFlankAngle 이하인지 판정. Ally 사망 시 false 반환 (PlayerController.IsAlive 체크, Codex 피드백 반영)
+- **SkillIntroAgent.cs** — PlayerProfile에 AttackRangeMin/Max, SafeRangeMin/Max, MinFlankAngle 5개 필드 추가. SwapPlayerGraph()에 5개 변수 주입 추가
+- **PlayerBotCombatInit.cs** — 동일 5개 SerializeField 추가, override 블록에 주입 추가
+
+### 그래프별 적용 계획 (Unity 에디터 수동 작업 필요)
+- **MeleeAggro_Move** — 변경 없음 (블랙보드에 변수만 공통 추가)
+- **RangedKiter_Move** — CalcApproach 앞에 AdjustRangeBySkillState 삽입
+- **HybridBalanced_Move** — 동일 위치에 AdjustRangeBySkillState 삽입 (파라미터 값 다름)
+- **CCDebuffer_Move** — IsBossTargetingAlly → IsFlankAngleLow 교체
+
+---
+
+## 스킬풀별 플레이어 이동 BehaviorGraph 분리
+**경로:** `Assets/Scripts/AI/BossAI/Agents/SkillIntroAgent.cs`, `Assets/Scripts/AI/Player/Combat/PlayerBotCombatInit.cs`
+**변경일:** 2026-04-27
+
+### 변경 사유
+- 플레이어 봇이 모든 스킬풀에서 동일한 이동 패턴 → 보스가 다양한 플레이 스타일에 대응 학습 불가
+
+### 변경 내용
+- **SkillIntroAgent.cs** — `PlayerProfile` 구조체 (SkillPoolSO + BehaviorGraph + 이동 파라미터 8개), `_playerProfiles[]` 배열로 병렬 배열 대체, `SwapPlayerGraph()` 메서드 (Graph 교체 → Init → 블랙보드 주입 → Restart)
+- **PlayerBotCombatInit.cs** — `_overrideMovementParams` bool 플래그 추가, 학습 모드에서는 SkillIntroAgent가 파라미터 주입
+
+---
+
+## CSV 데이터 확장 + 학습 타입별 파일 분리
+**경로:** `Assets/Scripts/AI/BossAI/Agents/SkillIntroAgent.cs`
+**변경일:** 2026-04-27
+
+### 변경 사유
+- 종료 사유, 누적 보상, 터치/사망 시점, 시전 횟수, 이동 거리 등 밸런스 분석에 필요한 데이터 누락
+- 여러 학습 타입(SkillIntro, DualTarget 등)의 로그가 같은 파일에 혼재
+
+### 변경 내용
+- CSV 14컬럼 → 23컬럼 확장 (EndReason, BossCasts, CumulativeReward, FirstTouchP1/P2, P1/P2DeathTime, BossTravelDist, UnlockedSkills)
+- 파일명 `matchup_log_{BehaviorName}.csv`로 학습 타입별 분리
+- Codex 지적: AddReward → RecordMatchResult 순서로 변경하여 CumulativeReward에 terminal reward 포함
+- 기존 SkillExecutor.TotalUseCount 재사용 (TotalAttemptCount 중복 추가 안 함)
+
+---
+
+## 플레이어 봇 벽 구석 박힘 방지
+**경로:** `Assets/Scripts/AI/Player/DoubleMove/PlayerArenaBounds.cs` (신규), `CalcFleePositionAction.cs`, `CalcStrafePositionAction.cs`, `CalcSpreadPositionAction.cs`, `CalcFlankPositionAction.cs`
+**변경일:** 2026-04-27
+
+### 변경 사유
+- Flee/Strafe/Spread/Flank 계산 시 맵 경계를 인식하지 못해 플레이어가 벽 구석에 박히는 현상
+
+### 변경 내용
+- **PlayerArenaBounds.cs** (신규) — 아레나 중심(9.86, 7.62), 유효범위 71m 기준 `ClampToArena()` static 헬퍼
+- **4개 Calc 액션** — candidate 계산 후 `PlayerArenaBounds.ClampToArena()` 호출 추가 (NavMesh.SamplePosition 전)
+
+---
+
+## 스킬풀 랜덤 분배 + 매치업 승률 기록
+**경로:** `Assets/Scripts/AI/BossAI/Agents/SkillIntroAgent.cs`, `Assets/Scripts/AI/BossAI/Training/TrainingSkillManager.cs`
+**신규 SO:** `Assets/ScriptableObjects/Skills/` — PlayerMeleeBurst, PlayerRangedKiter, PlayerHybridSurvivor, PlayerCCDebuffer, BossMeleeAggro, BossRangedZoner, BossTankSustain
+**변경일:** 2026-04-27
+
+### 변경 사유
+- 고정 스킬풀로는 보스가 한 가지 플레이 스타일에만 적응 → 범용성 부족
+- 어떤 매치업에서 보스가 강/약한지 파악할 수단 없음
+
+### 변경 내용
+- **TrainingSkillManager.cs** — `SetSkillPool()` 메서드 추가 (런타임 풀 교체)
+- **SkillIntroAgent.cs**:
+  - `_bossSkillPools[]`, `_playerSkillPools[]` Inspector 배열 추가
+  - `AssignRandomPools()` — 에피소드 시작마다 보스/P1/P2 풀 랜덤 할당
+  - `RecordMatchResult()` — 보스 승/패를 매치업 키(보스풀 vs P1풀+P2풀)별로 집계
+  - `LogMatchupStats()` — 50 에피소드마다 전체 매치업 승률 콘솔 출력
+  - 종료 로그에 매치업 키 포함 (`GetMatchupKey()`)
+- **스킬풀 SO 7종 신규 생성** — 플레이어 4종(근접폭딜/원거리견제/생존균형/CC디버프) + 보스 3종(근접압살/원거리공간압박/생존지구전)
+
+---
+
 ## 죽은 플레이어 타격 방지 보상 구조 수정
 **경로:** `Assets/Scripts/AI/BossAI/Agents/SkillIntroAgent.cs`
 **변경일:** 2026-04-26

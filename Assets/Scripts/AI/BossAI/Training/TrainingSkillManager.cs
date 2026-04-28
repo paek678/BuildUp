@@ -28,6 +28,8 @@ public class TrainingSkillManager : MonoBehaviour
     public int UnlockedCount => _unlockedCount;
     public SkillPoolSO SkillPool => _skillPool;
 
+    public void SetSkillPool(SkillPoolSO pool) => _skillPool = pool;
+
     private void Awake()
     {
         if (_skillManager == null) _skillManager = GetComponent<SkillManager>();

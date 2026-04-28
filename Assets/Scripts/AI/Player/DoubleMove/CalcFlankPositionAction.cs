@@ -33,7 +33,7 @@ public partial class CalcFlankPositionAction : Action
         bossToAlly.Normalize();
 
         Vector3 flankDir = -bossToAlly;
-        Vector3 candidate = bossPos + flankDir * FlankRadius.Value;
+        Vector3 candidate = PlayerArenaBounds.ClampToArena(bossPos + flankDir * FlankRadius.Value);
 
         if (!NavMesh.SamplePosition(candidate, out NavMeshHit hit, 2f, NavMesh.AllAreas))
         {

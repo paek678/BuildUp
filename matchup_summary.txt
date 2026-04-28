@@ -1,0 +1,12 @@
+Total: Boss WinRate 201/816 (24.6%)
+
+=== Boss Pool WinRate ===
+  BossMeleeAggro            | 101/252 ( 40.1%)
+  BossRangedZoner           |  70/294 ( 23.8%)
+  BossTankSustain           |  30/270 ( 11.1%)
+
+=== Player Pool (Boss WinRate) ===
+  PlayerCCDebuffer               | BossWin: 107/420 ( 25.5%)
+  PlayerHybridSurvivor           | BossWin: 102/415 ( 24.6%)
+  PlayerMeleeBurst               | BossWin:  97/383 ( 25.3%)
+  PlayerTrainingSkillPool        | BossWin:  96/414 ( 23.2%)
