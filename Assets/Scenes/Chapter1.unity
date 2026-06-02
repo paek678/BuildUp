@@ -6364,7 +6364,7 @@ MonoBehaviour:
   hasUpgradedFromAgentParameters: 1
   MaxStep: 0
   _moveSpeed: 8.4
-  _rotationSpeed: 540
+  _rotationSpeed: 300
   _phaseSpeedScale:
   - 1
   - 1
@@ -6405,34 +6405,34 @@ MonoBehaviour:
   - ArchetypeName: Melee
     SkillPool: {fileID: 11400000, guid: a1b2c3d4e5f60001ab0123456789cde1, type: 2}
     MoveGraph: {fileID: 4186811738917985622, guid: fa27213a173a42fca32ed38494101c63, type: 2}
-    DangerRange: 3
-    OptimalMin: 3
-    OptimalMax: 6
-    FleeDistance: 15
-    FlankRadius: 5
-    StrafeRadius: 4
+    DangerRange: 5
+    OptimalMin: 5
+    OptimalMax: 10
+    FleeDistance: 22
+    FlankRadius: 8
+    StrafeRadius: 7
     StrafeAngleStep: 30
-    MinSpacing: 3
-    AttackRangeMin: 3
-    AttackRangeMax: 6
-    SafeRangeMin: 8
-    SafeRangeMax: 12
+    MinSpacing: 5
+    AttackRangeMin: 5
+    AttackRangeMax: 10
+    SafeRangeMin: 12
+    SafeRangeMax: 20
     MinFlankAngle: 45
   - ArchetypeName: Ranged
     SkillPool: {fileID: 11400000, guid: a1b2c3d4e5f60002ab0123456789cde2, type: 2}
     MoveGraph: {fileID: 4186811738917985622, guid: 5459bb6c7c7449a9848805de9744b0b0, type: 2}
-    DangerRange: 8
-    OptimalMin: 12
-    OptimalMax: 20
-    FleeDistance: 25
-    FlankRadius: 15
-    StrafeRadius: 12
-    StrafeAngleStep: 20
-    MinSpacing: 5
-    AttackRangeMin: 12
-    AttackRangeMax: 25
-    SafeRangeMin: 15
-    SafeRangeMax: 25
+    DangerRange: 16
+    OptimalMin: 20
+    OptimalMax: 30
+    FleeDistance: 36
+    FlankRadius: 22
+    StrafeRadius: 16
+    StrafeAngleStep: 15
+    MinSpacing: 8
+    AttackRangeMin: 20
+    AttackRangeMax: 36
+    SafeRangeMin: 24
+    SafeRangeMax: 36
     MinFlankAngle: 60
   - ArchetypeName: CC
     SkillPool: {fileID: 11400000, guid: a1b2c3d4e5f60004ab0123456789cde4, type: 2}
@@ -6455,18 +6455,18 @@ MonoBehaviour:
     MoveGraph: {fileID: 4186811738917985622, guid: 899951f6215849228b061ff5f856326b, type: 2}
     DangerRange: 5
     OptimalMin: 6
-    OptimalMax: 15
-    FleeDistance: 18
-    FlankRadius: 10
-    StrafeRadius: 8
-    StrafeAngleStep: 25
-    MinSpacing: 4
-    AttackRangeMin: 5
-    AttackRangeMax: 18
+    OptimalMax: 30
+    FleeDistance: 36
+    FlankRadius: 18
+    StrafeRadius: 12
+    StrafeAngleStep: 20
+    MinSpacing: 6
+    AttackRangeMin: 4
+    AttackRangeMax: 34
     SafeRangeMin: 10
-    SafeRangeMax: 18
-    MinFlankAngle: 45
-  _trainingMode: 2
+    SafeRangeMax: 34
+    MinFlankAngle: 50
+  _trainingMode: 0
   _touchEpisodeDuration: 30
   _proximityRadius: 5
   _doubleTouchWindow: 3
@@ -6480,6 +6480,23 @@ MonoBehaviour:
   _pressureDrainRate: 1
   _engageEpisodeDuration: 90
   _engageFarPenaltyDist: 15
+  _winReward: 1.5
+  _lossPenalty: 1
+  _timeoutPenalty: 0.5
+  _dmgDealtScale: 0.0015
+  _dmgTakenScale: 0.0003
+  _phaseReward: 0.05
+  _stepPenalty: 0.0003
+  _playerKillReward: 0.4
+  _approachRewardScale: 0.003
+  _hitDeadPenalty: 0.04
+  _hitDeadRange: 8
+  _bothFarPenalty: 0.004
+  _bothFarThreshold: 20
+  _overrideArchetype: 1
+  _forcedP1Archetype: Melee
+  _forcedP2Archetype: Hybrid
+  _csvRunId: Melee_Hybrid_v1
   _statsLogInterval: 50
 --- !u!114 &1739756548
 MonoBehaviour:
@@ -7074,7 +7091,7 @@ NavMeshAgent:
   m_Enabled: 1
   m_AgentTypeID: 0
   m_Radius: 0.1
-  m_Speed: 0
+  m_Speed: 12
   m_Acceleration: 8
   avoidancePriority: 50
   m_AngularSpeed: 120
@@ -7508,7 +7525,7 @@ NavMeshAgent:
   m_Enabled: 1
   m_AgentTypeID: 0
   m_Radius: 0.1
-  m_Speed: 0
+  m_Speed: 12
   m_Acceleration: 8
   avoidancePriority: 50
   m_AngularSpeed: 120

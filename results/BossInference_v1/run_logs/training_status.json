@@ -1,0 +1,38 @@
+{
+    "BossInference": {
+        "checkpoints": [
+            {
+                "steps": 4565,
+                "file_path": "results\\BossInference_v1\\BossInference\\BossInference-4565.onnx",
+                "reward": 2.376129515030805,
+                "creation_time": 1779288779.2224262,
+                "auxillary_file_paths": [
+                    "results\\BossInference_v1\\BossInference\\BossInference-4565.pt"
+                ]
+            },
+            {
+                "steps": 25229,
+                "file_path": "results\\BossInference_v1\\BossInference\\BossInference-25229.onnx",
+                "reward": null,
+                "creation_time": 1779289165.6345086,
+                "auxillary_file_paths": [
+                    "results\\BossInference_v1\\BossInference\\BossInference-25229.pt"
+                ]
+            }
+        ],
+        "final_checkpoint": {
+            "steps": 25229,
+            "file_path": "results\\BossInference_v1\\BossInference.onnx",
+            "reward": null,
+            "creation_time": 1779289165.6345086,
+            "auxillary_file_paths": [
+                "results\\BossInference_v1\\BossInference\\BossInference-25229.pt"
+            ]
+        }
+    },
+    "metadata": {
+        "stats_format_version": "0.3.0",
+        "mlagents_version": "1.2.0.dev0",
+        "torch_version": "2.2.2+cu121"
+    }
+}

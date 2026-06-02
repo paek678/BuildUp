@@ -75,6 +75,29 @@ public class BossInferenceAgent : Agent
     [SerializeField] private float _engageEpisodeDuration  = 90f;
     [SerializeField] private float _engageFarPenaltyDist   = 15f;
 
+    [Header("Combat Rewards")]
+    [SerializeField] private float _winReward          = 1.5f;
+    [SerializeField] private float _lossPenalty        = 1f;
+    [SerializeField] private float _timeoutPenalty     = 0.5f;
+    [SerializeField] private float _dmgDealtScale      = 0.0015f;
+    [SerializeField] private float _dmgTakenScale      = 0.0003f;
+    [SerializeField] private float _phaseReward        = 0.05f;
+    [SerializeField] private float _stepPenalty        = 0.0001f;
+    [SerializeField] private float _playerKillReward    = 0.3f;
+    [SerializeField] private float _approachRewardScale = 0.002f;
+    [SerializeField] private float _hitDeadPenalty      = 0.01f;
+    [SerializeField] private float _hitDeadRange        = 8f;
+    [SerializeField] private float _bothFarPenalty      = 0.005f;
+    [SerializeField] private float _bothFarThreshold    = 7f;
+
+    [Header("Archetype Override")]
+    [SerializeField] private bool _overrideArchetype = false;
+    [SerializeField] private string _forcedP1Archetype = "Ranged";
+    [SerializeField] private string _forcedP2Archetype = "Ranged";
+
+    [Header("CSV")]
+    [SerializeField] private string _csvRunId = "";
+
     [Header("Logging")]
     [SerializeField] private int _statsLogInterval = 50;
 
@@ -128,6 +151,7 @@ public class BossInferenceAgent : Agent
     private bool _p2DeathHandled;
     private int _p1ArchIdx;
     private int _p2ArchIdx;
+    private float _prevNearestDist;
 
     // Touch mode state
     private bool  _p1Touched;
@@ -186,7 +210,7 @@ public class BossInferenceAgent : Agent
         if (_skillManager != null)   _skillManager.SetAutoCast(false);
 
         if (_trainingSkillManager != null)
-            _trainingSkillManager.SetUnlockConfig(MaxSkillSlots, MaxSkillSlots);
+            _trainingSkillManager.SetUnlockConfig(1, 5, 175f);
 
         // Player: initial 1 + 3 drafts @ 180s = max 4 (핸드오프 §7)
         if (_p1TrainingSkillMgr != null)
@@ -235,8 +259,25 @@ public class BossInferenceAgent : Agent
     private void PickArchetypes()
     {
         int count = (_archetypeProfiles != null) ? _archetypeProfiles.Length : 0;
-        _p1ArchIdx = count > 0 ? Random.Range(0, count) : 0;
-        _p2ArchIdx = count > 0 ? Random.Range(0, count) : 0;
+        if (count == 0) { _p1ArchIdx = 0; _p2ArchIdx = 0; return; }
+
+        if (_overrideArchetype)
+        {
+            _p1ArchIdx = FindArchetypeIndex(_forcedP1Archetype);
+            _p2ArchIdx = FindArchetypeIndex(_forcedP2Archetype);
+            if (_p1ArchIdx >= 0 && _p2ArchIdx >= 0) return;
+        }
+
+        _p1ArchIdx = Random.Range(0, count);
+        _p2ArchIdx = Random.Range(0, count);
+    }
+
+    private int FindArchetypeIndex(string name)
+    {
+        if (string.IsNullOrEmpty(name) || _archetypeProfiles == null) return -1;
+        for (int i = 0; i < _archetypeProfiles.Length; i++)
+            if (_archetypeProfiles[i].ArchetypeName == name) return i;
+        return -1;
     }
 
     private void AssignPools()
@@ -380,6 +421,7 @@ public class BossInferenceAgent : Agent
         _prevBossHp = 1f;
         _prevP1Hp   = _p1StatManager != null ? _p1StatManager.GetHPPercent() : 0f;
         _prevP2Hp   = _p2StatManager != null ? _p2StatManager.GetHPPercent() : 0f;
+        _prevNearestDist = 0f;
 
         _actIdle = _actFwd = _actLeft = _actRight = _actBack = 0;
         _behavFrames = 0;
@@ -822,10 +864,8 @@ public class BossInferenceAgent : Agent
 
     private void ApplyStepRewards()
     {
-        // Step penalty
-        AddReward(-0.0001f);
+        AddReward(-_stepPenalty);
 
-        // Damage dealt to players
         float p1Hp = _p1StatManager != null ? _p1StatManager.GetHPPercent() : 0f;
         float p2Hp = _p2StatManager != null ? _p2StatManager.GetHPPercent() : 0f;
         float p1MaxHp = _p1StatManager != null ? _p1StatManager.GetMaxHP() : 1f;
@@ -834,26 +874,80 @@ public class BossInferenceAgent : Agent
         float p1Drop = Mathf.Max(0f, _prevP1Hp - p1Hp) * p1MaxHp;
         float p2Drop = Mathf.Max(0f, _prevP2Hp - p2Hp) * p2MaxHp;
         float dmgDealt = p1Drop + p2Drop;
-        if (dmgDealt > 0f) AddReward(0.001f * dmgDealt);
+        if (dmgDealt > 0f) AddReward(_dmgDealtScale * dmgDealt);
 
-        // Damage taken by boss
         float bossHp = _bossStatManager != null ? _bossStatManager.GetHPPercent() : 0f;
         float bossMaxHp = _bossStatManager != null ? _bossStatManager.GetMaxHP() : 1f;
         float bossDrop = Mathf.Max(0f, _prevBossHp - bossHp) * bossMaxHp;
-        if (bossDrop > 0f) AddReward(-0.0005f * bossDrop);
+        if (bossDrop > 0f) AddReward(-_dmgTakenScale * bossDrop);
 
         // Phase progress
         int phase = _bossController != null ? _bossController.CurrentPhase : 0;
         if (phase > _lastPhaseRewarded)
         {
             int steps = phase - _lastPhaseRewarded;
-            AddReward(0.05f * steps);
+            AddReward(_phaseReward * steps);
             _lastPhaseRewarded = phase;
+        }
+
+        // Potential-based approach reward
+        float nearestDist = NearestAlivePlayerDist();
+        if (_prevNearestDist > 0f && nearestDist > 0f)
+        {
+            float delta = _prevNearestDist - nearestDist;
+            AddReward(delta * _approachRewardScale);
+        }
+        _prevNearestDist = nearestDist;
+
+        // Dead player targeting penalty
+        bool p1Alive = _p1StatManager != null && _p1StatManager.IsAlive;
+        bool p2Alive = _p2StatManager != null && _p2StatManager.IsAlive;
+        bool anyAlive = p1Alive || p2Alive;
+
+        if (anyAlive && _hitDeadPenalty > 0f)
+        {
+            if (!p1Alive && _p1Object != null)
+                ApplyDeadTargetPenalty(_p1Object);
+            if (!p2Alive && _p2Object != null)
+                ApplyDeadTargetPenalty(_p2Object);
+        }
+
+        // Both players far penalty
+        if (anyAlive && _bothFarPenalty > 0f)
+        {
+            float d1 = (p1Alive && _p1Object != null) ? Vector3.Distance(transform.position, _p1Object.transform.position) : 0f;
+            float d2 = (p2Alive && _p2Object != null) ? Vector3.Distance(transform.position, _p2Object.transform.position) : 0f;
+            bool p1Far = !p1Alive || d1 > _bothFarThreshold;
+            bool p2Far = !p2Alive || d2 > _bothFarThreshold;
+            if (p1Far && p2Far)
+                AddReward(-_bothFarPenalty);
         }
 
         _prevBossHp = bossHp;
         _prevP1Hp   = p1Hp;
         _prevP2Hp   = p2Hp;
+    }
+
+    private void ApplyDeadTargetPenalty(GameObject deadPlayer)
+    {
+        float dist = Vector3.Distance(transform.position, deadPlayer.transform.position);
+        if (dist > _hitDeadRange) return;
+
+        Vector3 toTarget = (deadPlayer.transform.position - transform.position).normalized;
+        float dot = Vector3.Dot(transform.forward, toTarget);
+        if (dot < 0.5f) return;
+
+        AddReward(-_hitDeadPenalty);
+    }
+
+    private float NearestAlivePlayerDist()
+    {
+        float best = float.MaxValue;
+        if (_p1StatManager != null && _p1StatManager.IsAlive && _p1Object != null)
+            best = Mathf.Min(best, Vector3.Distance(transform.position, _p1Object.transform.position));
+        if (_p2StatManager != null && _p2StatManager.IsAlive && _p2Object != null)
+            best = Mathf.Min(best, Vector3.Distance(transform.position, _p2Object.transform.position));
+        return best < float.MaxValue ? best : 0f;
     }
 
     // ══════════════════════════════════════════════════════════
@@ -869,14 +963,16 @@ public class BossInferenceAgent : Agent
         if (!p1Alive && !_p1DeathHandled)
         {
             _p1DeathHandled = true;
+            AddReward(_playerKillReward);
             FreezePlayer(_p1Object);
-            Debug.Log($"[BossInference] EP#{_currentEpisode} P1({GetArchName(_p1ArchIdx)}) 사망 | elapsed={Time.time - _episodeStartTime:F1}s");
+            Debug.Log($"[BossInference] EP#{_currentEpisode} P1({GetArchName(_p1ArchIdx)}) 사망 +{_playerKillReward} | elapsed={Time.time - _episodeStartTime:F1}s");
         }
         if (!p2Alive && !_p2DeathHandled)
         {
             _p2DeathHandled = true;
+            AddReward(_playerKillReward);
             FreezePlayer(_p2Object);
-            Debug.Log($"[BossInference] EP#{_currentEpisode} P2({GetArchName(_p2ArchIdx)}) 사망 | elapsed={Time.time - _episodeStartTime:F1}s");
+            Debug.Log($"[BossInference] EP#{_currentEpisode} P2({GetArchName(_p2ArchIdx)}) 사망 +{_playerKillReward} | elapsed={Time.time - _episodeStartTime:F1}s");
         }
 
         float elapsed = Time.time - _episodeStartTime;
@@ -886,7 +982,7 @@ public class BossInferenceAgent : Agent
         if (!bossAlive)
         {
             _endReason = "BossLose";
-            AddReward(-1f);
+            AddReward(-_lossPenalty);
             Debug.Log($"[BossInference] EP#{_currentEpisode} <color=red>BossLose</color> | {matchup} | elapsed={elapsed:F1}s reward={GetCumulativeReward():F3}");
             LogEpisodeCsv(false);
             EndEpisode();
@@ -896,7 +992,7 @@ public class BossInferenceAgent : Agent
         if (!p1Alive && !p2Alive)
         {
             _endReason = "BossWin";
-            AddReward(1f);
+            AddReward(_winReward);
             Debug.Log($"[BossInference] EP#{_currentEpisode} <color=green>BossWin</color> | {matchup} | elapsed={elapsed:F1}s bossHP={bossHpPct:P0} reward={GetCumulativeReward():F3}");
             LogEpisodeCsv(true);
             EndEpisode();
@@ -906,7 +1002,7 @@ public class BossInferenceAgent : Agent
         if (Time.time - _episodeStartTime >= EpisodeDuration)
         {
             _endReason = "Timeout";
-            AddReward(-0.3f);
+            AddReward(-_timeoutPenalty);
             Debug.Log($"[BossInference] EP#{_currentEpisode} <color=yellow>Timeout</color> | {matchup} | bossHP={bossHpPct:P0} reward={GetCumulativeReward():F3}");
             LogEpisodeCsv(false);
             EndEpisode();
@@ -936,7 +1032,9 @@ public class BossInferenceAgent : Agent
             var envParams = academy.EnvironmentParameters;
             workerIdx = (int)envParams.GetWithDefault("worker_id", 0f);
         }
-        string suffix = workerIdx > 0 ? $"_{_behaviorName}_w{workerIdx}" : $"_{_behaviorName}";
+
+        string tag = !string.IsNullOrEmpty(_csvRunId) ? _csvRunId : _behaviorName;
+        string suffix = workerIdx > 0 ? $"_{tag}_w{workerIdx}" : $"_{tag}";
         _csvPath = System.IO.Path.Combine(Application.dataPath, "..", $"results/episodes{suffix}.csv");
         string dir = System.IO.Path.GetDirectoryName(_csvPath);
         if (!System.IO.Directory.Exists(dir))

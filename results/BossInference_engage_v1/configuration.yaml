@@ -35,7 +35,7 @@ behaviors:
           memory: null
           goal_conditioning_type: hyper
           deterministic: false
-    init_path: results\BossInference_touch_v1\BossInference\checkpoint.pt
+    init_path: null
     keep_checkpoints: 20
     even_checkpoints: false
     max_steps: 10000000
@@ -67,9 +67,9 @@ engine_settings:
 environment_parameters: null
 checkpoint_settings:
   run_id: BossInference_engage_v1
-  initialize_from: BossInference_touch_v1
+  initialize_from: null
   load_model: false
-  resume: false
+  resume: true
   force: false
   train_model: false
   inference: false

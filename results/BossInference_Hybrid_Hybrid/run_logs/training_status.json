@@ -1,0 +1,290 @@
+{
+    "BossInference": {
+        "checkpoints": [
+            {
+                "steps": 399222,
+                "file_path": "results\\BossInference_Hybrid_Hybrid\\BossInference\\BossInference-399222.onnx",
+                "reward": null,
+                "creation_time": 1779384027.509802,
+                "auxillary_file_paths": [
+                    "results\\BossInference_Hybrid_Hybrid\\BossInference\\BossInference-399222.pt"
+                ]
+            },
+            {
+                "steps": 599122,
+                "file_path": "results\\BossInference_Hybrid_Hybrid\\BossInference\\BossInference-599122.onnx",
+                "reward": -1.9434727281332016,
+                "creation_time": 1779385339.8950198,
+                "auxillary_file_paths": [
+                    "results\\BossInference_Hybrid_Hybrid\\BossInference\\BossInference-599122.pt"
+                ]
+            },
+            {
+                "steps": 799978,
+                "file_path": "results\\BossInference_Hybrid_Hybrid\\BossInference\\BossInference-799978.onnx",
+                "reward": -3.437839522957802,
+                "creation_time": 1779386659.6688585,
+                "auxillary_file_paths": [
+                    "results\\BossInference_Hybrid_Hybrid\\BossInference\\BossInference-799978.pt"
+                ]
+            },
+            {
+                "steps": 999041,
+                "file_path": "results\\BossInference_Hybrid_Hybrid\\BossInference\\BossInference-999041.onnx",
+                "reward": 1.2298834919929504,
+                "creation_time": 1779387962.7748427,
+                "auxillary_file_paths": [
+                    "results\\BossInference_Hybrid_Hybrid\\BossInference\\BossInference-999041.pt"
+                ]
+            },
+            {
+                "steps": 1199236,
+                "file_path": "results\\BossInference_Hybrid_Hybrid\\BossInference\\BossInference-1199236.onnx",
+                "reward": -2.1588491648435593,
+                "creation_time": 1779389266.1040034,
+                "auxillary_file_paths": [
+                    "results\\BossInference_Hybrid_Hybrid\\BossInference\\BossInference-1199236.pt"
+                ]
+            },
+            {
+                "steps": 1399139,
+                "file_path": "results\\BossInference_Hybrid_Hybrid\\BossInference\\BossInference-1399139.onnx",
+                "reward": 1.5596128106117249,
+                "creation_time": 1779390573.5768387,
+                "auxillary_file_paths": [
+                    "results\\BossInference_Hybrid_Hybrid\\BossInference\\BossInference-1399139.pt"
+                ]
+            },
+            {
+                "steps": 1599161,
+                "file_path": "results\\BossInference_Hybrid_Hybrid\\BossInference\\BossInference-1599161.onnx",
+                "reward": null,
+                "creation_time": 1779391885.2744696,
+                "auxillary_file_paths": [
+                    "results\\BossInference_Hybrid_Hybrid\\BossInference\\BossInference-1599161.pt"
+                ]
+            },
+            {
+                "steps": 1799975,
+                "file_path": "results\\BossInference_Hybrid_Hybrid\\BossInference\\BossInference-1799975.onnx",
+                "reward": -2.8389081358909607,
+                "creation_time": 1779393201.817805,
+                "auxillary_file_paths": [
+                    "results\\BossInference_Hybrid_Hybrid\\BossInference\\BossInference-1799975.pt"
+                ]
+            },
+            {
+                "steps": 1999102,
+                "file_path": "results\\BossInference_Hybrid_Hybrid\\BossInference\\BossInference-1999102.onnx",
+                "reward": -2.066369906067848,
+                "creation_time": 1779394506.3929286,
+                "auxillary_file_paths": [
+                    "results\\BossInference_Hybrid_Hybrid\\BossInference\\BossInference-1999102.pt"
+                ]
+            },
+            {
+                "steps": 2199465,
+                "file_path": "results\\BossInference_Hybrid_Hybrid\\BossInference\\BossInference-2199465.onnx",
+                "reward": -3.2244435250759125,
+                "creation_time": 1779395815.6703331,
+                "auxillary_file_paths": [
+                    "results\\BossInference_Hybrid_Hybrid\\BossInference\\BossInference-2199465.pt"
+                ]
+            },
+            {
+                "steps": 2399744,
+                "file_path": "results\\BossInference_Hybrid_Hybrid\\BossInference\\BossInference-2399744.onnx",
+                "reward": -2.443929076194763,
+                "creation_time": 1779397129.9077156,
+                "auxillary_file_paths": [
+                    "results\\BossInference_Hybrid_Hybrid\\BossInference\\BossInference-2399744.pt"
+                ]
+            },
+            {
+                "steps": 2599823,
+                "file_path": "results\\BossInference_Hybrid_Hybrid\\BossInference\\BossInference-2599823.onnx",
+                "reward": 1.4822489619255066,
+                "creation_time": 1779398446.489855,
+                "auxillary_file_paths": [
+                    "results\\BossInference_Hybrid_Hybrid\\BossInference\\BossInference-2599823.pt"
+                ]
+            },
+            {
+                "steps": 2799729,
+                "file_path": "results\\BossInference_Hybrid_Hybrid\\BossInference\\BossInference-2799729.onnx",
+                "reward": null,
+                "creation_time": 1779399762.688999,
+                "auxillary_file_paths": [
+                    "results\\BossInference_Hybrid_Hybrid\\BossInference\\BossInference-2799729.pt"
+                ]
+            },
+            {
+                "steps": 2999485,
+                "file_path": "results\\BossInference_Hybrid_Hybrid\\BossInference\\BossInference-2999485.onnx",
+                "reward": -6.36524498462677,
+                "creation_time": 1779401069.4710336,
+                "auxillary_file_paths": [
+                    "results\\BossInference_Hybrid_Hybrid\\BossInference\\BossInference-2999485.pt"
+                ]
+            },
+            {
+                "steps": 3199929,
+                "file_path": "results\\BossInference_Hybrid_Hybrid\\BossInference\\BossInference-3199929.onnx",
+                "reward": -8.476144909858704,
+                "creation_time": 1779402386.230436,
+                "auxillary_file_paths": [
+                    "results\\BossInference_Hybrid_Hybrid\\BossInference\\BossInference-3199929.pt"
+                ]
+            },
+            {
+                "steps": 3399359,
+                "file_path": "results\\BossInference_Hybrid_Hybrid\\BossInference\\BossInference-3399359.onnx",
+                "reward": -2.9260561615228653,
+                "creation_time": 1779403697.6255364,
+                "auxillary_file_paths": [
+                    "results\\BossInference_Hybrid_Hybrid\\BossInference\\BossInference-3399359.pt"
+                ]
+            },
+            {
+                "steps": 3599806,
+                "file_path": "results\\BossInference_Hybrid_Hybrid\\BossInference\\BossInference-3599806.onnx",
+                "reward": -3.3854775428771973,
+                "creation_time": 1779405013.6610053,
+                "auxillary_file_paths": [
+                    "results\\BossInference_Hybrid_Hybrid\\BossInference\\BossInference-3599806.pt"
+                ]
+            },
+            {
+                "steps": 3799146,
+                "file_path": "results\\BossInference_Hybrid_Hybrid\\BossInference\\BossInference-3799146.onnx",
+                "reward": null,
+                "creation_time": 1779406324.097084,
+                "auxillary_file_paths": [
+                    "results\\BossInference_Hybrid_Hybrid\\BossInference\\BossInference-3799146.pt"
+                ]
+            },
+            {
+                "steps": 3999525,
+                "file_path": "results\\BossInference_Hybrid_Hybrid\\BossInference\\BossInference-3999525.onnx",
+                "reward": -5.993141710758209,
+                "creation_time": 1779407632.69576,
+                "auxillary_file_paths": [
+                    "results\\BossInference_Hybrid_Hybrid\\BossInference\\BossInference-3999525.pt"
+                ]
+            },
+            {
+                "steps": 4199530,
+                "file_path": "results\\BossInference_Hybrid_Hybrid\\BossInference\\BossInference-4199530.onnx",
+                "reward": -3.756996750831604,
+                "creation_time": 1779408943.0718813,
+                "auxillary_file_paths": [
+                    "results\\BossInference_Hybrid_Hybrid\\BossInference\\BossInference-4199530.pt"
+                ]
+            },
+            {
+                "steps": 4399322,
+                "file_path": "results\\BossInference_Hybrid_Hybrid\\BossInference\\BossInference-4399322.onnx",
+                "reward": -1.8131340742111206,
+                "creation_time": 1779410251.1036508,
+                "auxillary_file_paths": [
+                    "results\\BossInference_Hybrid_Hybrid\\BossInference\\BossInference-4399322.pt"
+                ]
+            },
+            {
+                "steps": 4599702,
+                "file_path": "results\\BossInference_Hybrid_Hybrid\\BossInference\\BossInference-4599702.onnx",
+                "reward": -12.080230832099915,
+                "creation_time": 1779411562.7216797,
+                "auxillary_file_paths": [
+                    "results\\BossInference_Hybrid_Hybrid\\BossInference\\BossInference-4599702.pt"
+                ]
+            },
+            {
+                "steps": 4799023,
+                "file_path": "results\\BossInference_Hybrid_Hybrid\\BossInference\\BossInference-4799023.onnx",
+                "reward": -7.029355943202972,
+                "creation_time": 1779412871.4933376,
+                "auxillary_file_paths": [
+                    "results\\BossInference_Hybrid_Hybrid\\BossInference\\BossInference-4799023.pt"
+                ]
+            },
+            {
+                "steps": 4999947,
+                "file_path": "results\\BossInference_Hybrid_Hybrid\\BossInference\\BossInference-4999947.onnx",
+                "reward": null,
+                "creation_time": 1779414183.2265966,
+                "auxillary_file_paths": [
+                    "results\\BossInference_Hybrid_Hybrid\\BossInference\\BossInference-4999947.pt"
+                ]
+            },
+            {
+                "steps": 5199253,
+                "file_path": "results\\BossInference_Hybrid_Hybrid\\BossInference\\BossInference-5199253.onnx",
+                "reward": -3.951392263174057,
+                "creation_time": 1779415491.0622468,
+                "auxillary_file_paths": [
+                    "results\\BossInference_Hybrid_Hybrid\\BossInference\\BossInference-5199253.pt"
+                ]
+            },
+            {
+                "steps": 5399691,
+                "file_path": "results\\BossInference_Hybrid_Hybrid\\BossInference\\BossInference-5399691.onnx",
+                "reward": -5.177756726741791,
+                "creation_time": 1779416811.5111566,
+                "auxillary_file_paths": [
+                    "results\\BossInference_Hybrid_Hybrid\\BossInference\\BossInference-5399691.pt"
+                ]
+            },
+            {
+                "steps": 5599353,
+                "file_path": "results\\BossInference_Hybrid_Hybrid\\BossInference\\BossInference-5599353.onnx",
+                "reward": null,
+                "creation_time": 1779418125.6970937,
+                "auxillary_file_paths": [
+                    "results\\BossInference_Hybrid_Hybrid\\BossInference\\BossInference-5599353.pt"
+                ]
+            },
+            {
+                "steps": 5799657,
+                "file_path": "results\\BossInference_Hybrid_Hybrid\\BossInference\\BossInference-5799657.onnx",
+                "reward": -5.580508187413216,
+                "creation_time": 1779419441.3350492,
+                "auxillary_file_paths": [
+                    "results\\BossInference_Hybrid_Hybrid\\BossInference\\BossInference-5799657.pt"
+                ]
+            },
+            {
+                "steps": 5999777,
+                "file_path": "results\\BossInference_Hybrid_Hybrid\\BossInference\\BossInference-5999777.onnx",
+                "reward": -0.683761715888977,
+                "creation_time": 1779420754.997699,
+                "auxillary_file_paths": [
+                    "results\\BossInference_Hybrid_Hybrid\\BossInference\\BossInference-5999777.pt"
+                ]
+            },
+            {
+                "steps": 6142797,
+                "file_path": "results\\BossInference_Hybrid_Hybrid\\BossInference\\BossInference-6142797.onnx",
+                "reward": -0.9460019841790199,
+                "creation_time": 1779421757.8942442,
+                "auxillary_file_paths": [
+                    "results\\BossInference_Hybrid_Hybrid\\BossInference\\BossInference-6142797.pt"
+                ]
+            }
+        ],
+        "final_checkpoint": {
+            "steps": 6142797,
+            "file_path": "results\\BossInference_Hybrid_Hybrid\\BossInference.onnx",
+            "reward": -0.9460019841790199,
+            "creation_time": 1779421757.8942442,
+            "auxillary_file_paths": [
+                "results\\BossInference_Hybrid_Hybrid\\BossInference\\BossInference-6142797.pt"
+            ]
+        }
+    },
+    "metadata": {
+        "stats_format_version": "0.3.0",
+        "mlagents_version": "1.2.0.dev0",
+        "torch_version": "2.2.2+cu121"
+    }
+}

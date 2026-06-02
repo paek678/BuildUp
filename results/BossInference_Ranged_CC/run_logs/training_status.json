@@ -1,0 +1,65 @@
+{
+    "BossInference": {
+        "checkpoints": [
+            {
+                "steps": 199519,
+                "file_path": "results\\BossInference_Ranged_CC\\BossInference\\BossInference-199519.onnx",
+                "reward": -88.4116325378418,
+                "creation_time": 1779374831.1237566,
+                "auxillary_file_paths": [
+                    "results\\BossInference_Ranged_CC\\BossInference\\BossInference-199519.pt"
+                ]
+            },
+            {
+                "steps": 399420,
+                "file_path": "results\\BossInference_Ranged_CC\\BossInference\\BossInference-399420.onnx",
+                "reward": -41.37929606437683,
+                "creation_time": 1779376616.007371,
+                "auxillary_file_paths": [
+                    "results\\BossInference_Ranged_CC\\BossInference\\BossInference-399420.pt"
+                ]
+            },
+            {
+                "steps": 599273,
+                "file_path": "results\\BossInference_Ranged_CC\\BossInference\\BossInference-599273.onnx",
+                "reward": null,
+                "creation_time": 1779378430.6146843,
+                "auxillary_file_paths": [
+                    "results\\BossInference_Ranged_CC\\BossInference\\BossInference-599273.pt"
+                ]
+            },
+            {
+                "steps": 799396,
+                "file_path": "results\\BossInference_Ranged_CC\\BossInference\\BossInference-799396.onnx",
+                "reward": -44.536850690841675,
+                "creation_time": 1779380253.256129,
+                "auxillary_file_paths": [
+                    "results\\BossInference_Ranged_CC\\BossInference\\BossInference-799396.pt"
+                ]
+            },
+            {
+                "steps": 837233,
+                "file_path": "results\\BossInference_Ranged_CC\\BossInference\\BossInference-837233.onnx",
+                "reward": -96.84926223754883,
+                "creation_time": 1779380633.9075444,
+                "auxillary_file_paths": [
+                    "results\\BossInference_Ranged_CC\\BossInference\\BossInference-837233.pt"
+                ]
+            }
+        ],
+        "final_checkpoint": {
+            "steps": 837233,
+            "file_path": "results\\BossInference_Ranged_CC\\BossInference.onnx",
+            "reward": -96.84926223754883,
+            "creation_time": 1779380633.9075444,
+            "auxillary_file_paths": [
+                "results\\BossInference_Ranged_CC\\BossInference\\BossInference-837233.pt"
+            ]
+        }
+    },
+    "metadata": {
+        "stats_format_version": "0.3.0",
+        "mlagents_version": "1.2.0.dev0",
+        "torch_version": "2.2.2+cu121"
+    }
+}

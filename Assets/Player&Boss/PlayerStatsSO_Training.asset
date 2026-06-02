@@ -28,8 +28,8 @@ MonoBehaviour:
   DefenseUpMultiplier: 1
   VulnerabilityBonus: 0
   ReflectRatio: 0
-  MaxHP: 150
-  CurrentHP: 150
+  MaxHP: 1000
+  CurrentHP: 1000
   BaseDamage: 10
   BaseDefense: 5
   MoveSpeed: 14
@@ -49,6 +49,6 @@ MonoBehaviour:
   CounterWindow: 0.5
   ShieldMax: 50
   CurrentShield: 0
-  HPRegenRate: 1
+  HPRegenRate: 0.3
   ReviveTime: 5
   AggroWeight: 1

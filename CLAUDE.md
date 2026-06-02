@@ -14,6 +14,7 @@
 - **2D 레거시 코드 기준 금지** — 3D + Host-authoritative 경로 기준만
 - **UniTask 미설치** — 코루틴 사용, `WaitForSeconds` 반드시 캐싱
 - **Addressables 미설치** — `[SerializeField] private` 직접 참조
+- **MCP recompile_scripts 주의** — `recompile_scripts` 호출 시 MCP 연결이 끊김. MCP로 Inspector 값 세팅이 필요한 경우 **recompile을 먼저 하고, MCP 재연결 후 Inspector 작업** 순서로 진행
 
 ---
 

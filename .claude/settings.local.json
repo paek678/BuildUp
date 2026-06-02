@@ -1,5 +1,4 @@
 {
-  "model": "claude-opus-4-6",
   "permissions": {
     "allow": [
       "Read",
@@ -51,7 +50,9 @@
       "WebFetch(domain:kiit.or.kr)",
       "WebFetch(domain:ki-it.or.kr)",
       "WebFetch(domain:dbpiaone.com)",
-      "mcp__codex__codex"
+      "mcp__codex__codex",
+      "WebFetch(domain:www.kumoh.ac.kr)"
     ]
-  }
+  },
+  "model": "claude-opus-4-6"
 }
