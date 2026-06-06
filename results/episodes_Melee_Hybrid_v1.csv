@@ -174,3 +174,14 @@ episode_id,p1_archetype,p2_archetype,outcome,duration_sec,boss_hp_remaining,tota
 173,Melee,Hybrid,BossWin,529.3,0.326,4041,2000,2,3,3,-8.809,1573.5,0.285,0.172,0.338,0.205
 174,Melee,Hybrid,BossWin,315.7,0.304,4176,2000,2,2,2,-0.472,1178.1,0.170,0.234,0.315,0.281
 175,Melee,Hybrid,BossLose,220.7,0.000,6000,777,2,2,3,-5.054,662.3,0.204,0.214,0.400,0.183
+
+# === Session 2026-06-02 20:19:10 ===
+episode_id,p1_archetype,p2_archetype,outcome,duration_sec,boss_hp_remaining,total_damage_to_boss,total_damage_to_players,p1_skills_unlocked,p2_skills_unlocked,phase_reached,cumulative_reward,boss_travel_dist,idle_ratio,fwd_ratio,rot_ratio,back_ratio
+1,Melee,Hybrid,BossLose,361.0,0.000,6000,1548,3,3,3,-7.647,1461.6,0.277,0.124,0.109,0.489
+2,Melee,Hybrid,BossLose,325.4,0.000,6000,60,2,2,3,-9.251,1302.2,0.205,0.098,0.184,0.513
+3,Melee,Hybrid,BossLose,258.0,0.000,6000,741,2,2,3,-6.363,1141.2,0.177,0.024,0.112,0.686
+4,Melee,Hybrid,BossLose,340.3,0.000,6000,482,2,2,3,-8.265,1277.6,0.277,0.089,0.147,0.487
+5,Melee,Hybrid,BossWin,258.7,0.183,4900,2000,2,2,3,-1.039,1050.0,0.238,0.037,0.113,0.612
+6,Melee,Hybrid,BossLose,250.7,0.000,6000,223,2,2,3,-7.767,920.2,0.272,0.110,0.179,0.438
+7,Melee,Hybrid,BossLose,237.3,0.000,6000,1206,2,2,3,-6.958,1087.4,0.184,0.031,0.113,0.672
+8,Melee,Hybrid,BossLose,210.4,0.000,6000,877,2,2,3,-5.565,719.7,0.294,0.096,0.189,0.421
