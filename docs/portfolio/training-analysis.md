@@ -1,14 +1,14 @@
-# Training Analysis
+# 학습 결과 분석
 
-## Verified Source
+## 분석 자료
 
-Training numbers in this document are based on [TRAINING_ANALYSIS.md](../../TRAINING_ANALYSIS.md).
+이 문서의 학습 수치는 [TRAINING_ANALYSIS.md](../../TRAINING_ANALYSIS.md)를 기준으로 합니다.
 
-## Summary
+## 결과 요약
 
-The analysis dated 2026-05-25 covers 5 matchup types and 2,585 total episodes.
+2026년 5월 25일에 작성된 분석은 5개 매치업, 총 2,585에피소드를 대상으로 합니다.
 
-| Matchup | Episodes | Boss Wins | Player Wins | Timeout | Boss Win Rate | Recent 50 Episodes | Grade |
+| 매치업 | 에피소드 수 | 보스 승리 | 플레이어 승리 | 시간 초과 | 보스 승률 | 최근 50에피소드 승률 | 분석 등급 |
 | --- | ---: | ---: | ---: | ---: | ---: | ---: | --- |
 | Hybrid x CC | 252 | 168 | 68 | 16 | 66.7% | 68.0% | S |
 | Hybrid x Hybrid | 1,464 | 931 | 441 | 92 | 63.6% | 64.0% | A |
@@ -16,8 +16,8 @@ The analysis dated 2026-05-25 covers 5 matchup types and 2,585 total episodes.
 | Ranged x Hybrid | 134 | 63 | 46 | 25 | 47.0% | 54.0% | C+ |
 | Ranged x Ranged | 543 | 208 | 291 | 44 | 38.3% | 58.0% | B- |
 
-## Interpretation and Validation
+## 결과 해석과 검증 범위
 
-The results compare matchup-specific behavior and win rates. They identify stronger and weaker matchups and provide evidence for further tuning.
+위 결과는 플레이어 성향 조합에 따른 보스의 행동과 승률을 비교한 자료입니다. 매치업별로 강점과 약점을 파악하고 추가 학습과 조정 방향을 검토하는 데 활용할 수 있습니다.
 
-These training results do not establish final combat balance or the behavior of each imported model in the multiplayer runtime. Runtime model selection and network play require separate validation.
+학습 결과만으로 최종 전투 밸런스나 각 모델의 멀티플레이 환경 내 동작을 확정할 수는 없습니다. 실행 환경에 적용할 모델 선정과 네트워크 플레이 동작은 별도로 검증해야 합니다.

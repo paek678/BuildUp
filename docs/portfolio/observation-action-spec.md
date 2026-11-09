@@ -1,45 +1,47 @@
-# Observation & Action Spec
+# 관측값과 행동 규격
 
-## Observation
+## 관측 공간
 
-`BossObservationCollector.CollectFull129` collects 129 observation channels for the movement policy.
+`BossObservationCollector.CollectFull129`는 이동 정책에 사용할 129개 관측값을 수집합니다.
 
-| Section | Channels |
+| 영역 | 채널 수 |
 | --- | ---: |
-| Position relations | 11 |
-| Boss/player state | 4 |
-| Boss skill slots | 35 |
-| Touch flags | 2 |
-| Player skill slots | 70 |
-| Extra battle context | 7 |
-| Total | 129 |
+| 보스와 플레이어의 위치 관계 | 11 |
+| 보스 및 플레이어 상태 | 4 |
+| 보스 스킬 슬롯 | 35 |
+| 플레이어의 근접 범위 진입 여부 | 2 |
+| 플레이어 스킬 슬롯 | 70 |
+| 추가 전투 정보 | 7 |
+| 합계 | 129 |
 
-## Combat Context
+## 관측에 포함되는 전투 정보
 
-The observations include positions and combat context: player and boss skill slots, casting state, player movement speed, unlocked slots, and recent damage. Channel order and normalization must remain consistent with the ArenaCombat_server observation collector.
+관측값에는 위치 정보와 함께 플레이어·보스의 스킬 슬롯, 시전 상태, 플레이어 이동 속도, 열린 슬롯 수, 최근 피해량을 포함합니다. 채널 순서와 정규화 방식은 ArenaCombat_server의 관측값 수집기와 일치해야 합니다.
 
-## Action Space
+## 행동 공간
 
-| Index | Action |
+| 인덱스 | 행동 |
 | ---: | --- |
-| 0 | idle |
-| 1 | forward |
-| 2 | turn left |
-| 3 | turn right |
-| 4 | backward |
+| 0 | 대기 |
+| 1 | 전진 |
+| 2 | 좌회전 |
+| 3 | 우회전 |
+| 4 | 후진 |
 
-## Design Decision
+## 역할 분리
 
-The model selects movement actions. Skill selection and execution remain in the auto-cast and combat systems, which keeps the movement policy separate from skill rules and multiplayer authority.
+학습 모델은 이동 행동을 선택합니다. 스킬 선택과 실행은 자동 시전 및 전투 시스템에서 처리하여, 이동 정책과 스킬 규칙·멀티플레이 권한을 분리합니다.
 
-## Runtime Alignment
+<a id="runtime-alignment"></a>
 
-Action index meanings match the runtime's `BossInferenceAgent`, but the current movement implementations differ: the training agent applies `BackwardSpeedScale = 0.7f`, while the runtime's backward action uses the full configured movement speed. This difference requires verification before treating a model as directly interchangeable between the two environments.
+## 실행 환경과의 정합성
 
-The channel count and action mapping describe the interface. They do not establish that all movement parameters or serialized scene settings are identical.
+행동 인덱스의 의미는 실행 환경의 `BossInferenceAgent`와 같습니다. 다만 현재 이동 구현에는 차이가 있습니다. 학습 에이전트는 `BackwardSpeedScale = 0.7f`를 적용하지만, 실행 환경의 후진 행동은 설정된 이동 속도를 그대로 사용합니다. 두 환경에서 모델을 그대로 교체하여 사용하기 전에 이 차이를 검증해야 합니다.
 
-## Implementation References
+관측값 수와 행동 매핑은 두 환경 사이의 인터페이스를 설명합니다. 이 규격만으로 모든 이동 파라미터나 씬에 저장된 설정까지 동일하다고 판단할 수는 없습니다.
 
-- [Training agent](../../Assets/Scripts/AI/BossAI/Agents/BossInferenceAgent.cs)
-- [Observation collector](../../Assets/Scripts/AI/BossAI/Observation/BossObservationCollector.cs)
-- [ArenaCombat_server runtime](https://github.com/paek678/ArenaCombat_server)
+## 관련 코드 및 문서
+
+- [학습 에이전트](../../Assets/Scripts/AI/BossAI/Agents/BossInferenceAgent.cs)
+- [관측값 수집기](../../Assets/Scripts/AI/BossAI/Observation/BossObservationCollector.cs)
+- [ArenaCombat_server 실행 프로젝트](https://github.com/paek678/ArenaCombat_server)
