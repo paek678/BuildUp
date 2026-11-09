@@ -1,30 +1,32 @@
-# Portfolio Overview
+# Project Overview
 
-BuildUp is the supporting ML training repository for ArenaCombat_server.
+BuildUp uses Unity ML-Agents PPO to train boss movement policies for a 2-player cooperative boss fight. Training runs, matchup analysis, and ONNX outputs are kept separately from the multiplayer game runtime.
 
-The public story should stay focused:
+## Project Roles
 
-```text
-BuildUp trains boss movement policies.
-ArenaCombat_server owns the actual multiplayer runtime, combat rules, skill execution, and authority.
-```
+| Project | Responsibility |
+| --- | --- |
+| BuildUp | Training environment, player bots, movement policy training, analysis, and ONNX export |
+| ArenaCombat_server | Multiplayer authority, combat resolution, skill execution, and movement inference |
 
-## Project Positioning
+## Training Pipeline
 
-BuildUp uses Unity ML-Agents PPO to train boss movement decisions for a 2-player boss fight scenario. Its value is in the training setup, observation/action design, matchup analysis, and ONNX export path.
+Behavior Tree player bots provide opponents for the boss. `BossInferenceAgent` supports Touch, Engage, and Combat training modes, with 129 observation channels and one discrete movement branch containing 5 actions.
 
-## What To Emphasize
+The learned policy controls movement. Skill execution is handled separately by the training environment's auto-cast helper. Exported ONNX assets can be assigned to the related ArenaCombat_server runtime.
 
-- ML-Agents PPO training setup
-- 129-channel observation design
-- 5 discrete movement actions
-- matchup-based performance analysis
-- ONNX model outputs
-- alignment target with ArenaCombat_server
+## Implementation References
 
-## What Not To Emphasize
+- [Observation and action specification](observation-action-spec.md)
+- [Matchup analysis](training-analysis.md)
+- [Training agent](../../Assets/Scripts/AI/BossAI/Agents/BossInferenceAgent.cs)
+- [Observation collector](../../Assets/Scripts/AI/BossAI/Observation/BossObservationCollector.cs)
+- [Combat training configuration](../../BossInference_config.yaml)
+- [Training change history](../../Assets/CHANGES.md)
+- [ArenaCombat_server](https://github.com/paek678/ArenaCombat_server)
 
-- BuildUp is not the multiplayer runtime.
-- BuildUp should not be described as the full boss AI product.
-- BuildUp should not claim complete production deployment without runtime validation.
+## Runtime Alignment and Validation
 
+Observation order, normalization, action indices, and movement behavior must agree between training and runtime. The [observation and action specification](observation-action-spec.md#runtime-alignment) records the current backward-speed difference that requires verification.
+
+Training results and exported models are available in the repository. Final model selection, behavior in a 2-player network session, and combat balance require runtime validation.

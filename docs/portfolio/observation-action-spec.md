@@ -2,7 +2,7 @@
 
 ## Observation
 
-The portfolio-facing observation spec is 129 channels.
+`BossObservationCollector.CollectFull129` collects 129 observation channels for the movement policy.
 
 | Section | Channels |
 | --- | ---: |
@@ -14,11 +14,9 @@ The portfolio-facing observation spec is 129 channels.
 | Extra battle context | 7 |
 | Total | 129 |
 
-## Why This Matters
+## Combat Context
 
-The observation design includes more than raw positions. It includes combat context such as player skill slots, boss skill slots, cast state, movement state, unlocked slots, and recent battle context.
-
-This makes the movement policy closer to the actual combat problem and helps align the training environment with the ArenaCombat_server runtime.
+The observations include positions and combat context: player and boss skill slots, casting state, player movement speed, unlocked slots, and recent damage. Channel order and normalization must remain consistent with the ArenaCombat_server observation collector.
 
 ## Action Space
 
@@ -32,7 +30,16 @@ This makes the movement policy closer to the actual combat problem and helps ali
 
 ## Design Decision
 
-The model is intentionally scoped to movement.
+The model selects movement actions. Skill selection and execution remain in the auto-cast and combat systems, which keeps the movement policy separate from skill rules and multiplayer authority.
 
-Skill selection is excluded from the ML action space and remains in the rule/runtime layer. This reduces action-space complexity and keeps combat authority in ArenaCombat_server.
+## Runtime Alignment
 
+Action index meanings match the runtime's `BossInferenceAgent`, but the current movement implementations differ: the training agent applies `BackwardSpeedScale = 0.7f`, while the runtime's backward action uses the full configured movement speed. This difference requires verification before treating a model as directly interchangeable between the two environments.
+
+The channel count and action mapping describe the interface. They do not establish that all movement parameters or serialized scene settings are identical.
+
+## Implementation References
+
+- [Training agent](../../Assets/Scripts/AI/BossAI/Agents/BossInferenceAgent.cs)
+- [Observation collector](../../Assets/Scripts/AI/BossAI/Observation/BossObservationCollector.cs)
+- [ArenaCombat_server runtime](https://github.com/paek678/ArenaCombat_server)

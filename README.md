@@ -1,83 +1,81 @@
-# BuildUp ML Training
+# BuildUp 보스 이동 AI 학습
 
-> Unity ML-Agents training project for boss movement policies targeting the ArenaCombat_server runtime.
+> Unity ML-Agents로 보스의 이동 정책을 학습하고, ArenaCombat_server 실행 환경에 사용할 ONNX 모델을 생성하는 프로젝트입니다.
 
-BuildUp is a supporting ML training repository for [ArenaCombat_server](https://github.com/paek678/ArenaCombat_server). It is not the main multiplayer runtime. Its role is to train and analyze boss movement policies separately, then provide ONNX model assets and documented observation/action specs that can be aligned with the ArenaCombat_server runtime.
+BuildUp은 [ArenaCombat_server](https://github.com/paek678/ArenaCombat_server)의 보스 이동 AI를 학습하고 분석하는 Unity 프로젝트입니다. 플레이어 봇을 상대로 이동 정책을 반복 학습하고, 학습 결과를 ONNX 모델로 출력합니다. 실제 게임의 멀티플레이 연결, 전투 판정, 스킬 실행은 ArenaCombat_server에서 담당합니다.
 
-## Highlights
+## 주요 기능
 
-- Unity ML-Agents PPO training setup for boss movement.
-- 129-channel observation spec for combat-aware movement decisions.
-- 5 discrete movement actions.
-- matchup-based training analysis.
-- ONNX model outputs and runtime alignment target.
+- Unity ML-Agents PPO를 활용한 보스 이동 정책 학습
+- 전투 상황을 반영하는 129개 관측값 구성
+- 5개 이산 이동 행동을 사용하는 정책 설계
+- 플레이어 성향 조합별 학습 결과와 행동 패턴 분석
+- ONNX 모델 출력 및 게임 실행 환경과의 연동 규격 정리
 
-## Tech Stack
+## 기술 스택
 
-| Area | Version / Tool |
+| 구분 | 버전 및 도구 |
 | --- | --- |
-| Engine | Unity `6000.3.11f1` |
-| ML Framework | Unity ML-Agents `4.0.2` |
-| Input | Unity Input System `1.19.0` |
-| Rendering | URP `17.3.0` |
-| Runtime Target | ArenaCombat_server host-authoritative runtime |
+| 게임 엔진 | Unity `6000.3.11f1` |
+| 머신러닝 프레임워크 | Unity ML-Agents `4.0.2` |
+| 입력 | Unity Input System `1.19.0` |
+| 렌더링 | URP `17.3.0` |
+| 모델 적용 대상 | ArenaCombat_server의 호스트 권한 기반 실행 환경 |
 
-## Role In The Portfolio
+## 프로젝트 역할
 
-```text
-ArenaCombat_server = main multiplayer combat runtime
-BuildUp = related ML training project for boss movement
-```
+| 프로젝트 | 역할 |
+| --- | --- |
+| BuildUp | 보스 이동 정책 학습, 실험 결과 분석, ONNX 모델 출력 |
+| ArenaCombat_server | 실제 멀티플레이 게임 실행, 전투 판정, 스킬 실행, 모델 추론 |
 
-BuildUp trains movement policies. It does not own multiplayer authority, combat resolution, or final skill execution. Those responsibilities remain in ArenaCombat_server.
+BuildUp은 이동 정책을 학습하는 환경이며, 네트워크 권한과 최종 전투 결과는 ArenaCombat_server에서 관리합니다.
 
-## Training Structure
+## 학습 구조
 
 ```mermaid
 flowchart TD
-    Env["Training Environment"] --> Obs["129-channel observation"]
+    Env["학습 환경"] --> Obs["129개 관측값"]
     Obs --> PPO["ML-Agents PPO"]
-    PPO --> Act["5 movement actions"]
-    Act --> Sim["Boss movement in simulation"]
-    PPO --> ONNX["ONNX model outputs"]
-    ONNX --> Runtime["ArenaCombat_server runtime target"]
+    PPO --> Act["5개 이동 행동"]
+    Act --> Sim["학습 환경에서 보스 이동"]
+    PPO --> ONNX["ONNX 모델 출력"]
+    ONNX --> Runtime["ArenaCombat_server 실행 환경"]
 ```
 
-## Observation Spec
+## 관측 공간
 
-The portfolio-facing spec is a 129-channel observation split into six groups:
+관측값은 다음 6개 영역, 총 129개 채널로 구성합니다.
 
-| Section | Channels |
+| 영역 | 채널 수 |
 | --- | ---: |
-| Position relations | 11 |
-| Boss/player state | 4 |
-| Boss skill slots | 35 |
-| Touch flags | 2 |
-| Player skill slots | 70 |
-| Extra battle context | 7 |
-| Total | 129 |
+| 보스와 플레이어의 위치 관계 | 11 |
+| 보스 및 플레이어 상태 | 4 |
+| 보스 스킬 슬롯 | 35 |
+| 플레이어의 근접 범위 진입 여부 | 2 |
+| 플레이어 스킬 슬롯 | 70 |
+| 추가 전투 정보 | 7 |
+| 합계 | 129 |
 
-This is stronger than simple position tracking because the model can observe combat context such as skill slots, casting state, movement state, and recent battle context.
+위치와 거리 외에도 스킬 슬롯, 시전 상태, 이동 상태, 최근 전투 정보를 관측하여 전투 상황에 따른 이동 판단에 활용합니다.
 
-## Action Spec
+## 행동 공간
 
-| Index | Action |
+| 인덱스 | 행동 |
 | ---: | --- |
-| 0 | idle |
-| 1 | forward |
-| 2 | turn left |
-| 3 | turn right |
-| 4 | backward |
+| 0 | 대기 |
+| 1 | 전진 |
+| 2 | 좌회전 |
+| 3 | 우회전 |
+| 4 | 후진 |
 
-The model is scoped to movement decisions only. Skill selection and combat rules stay in the ArenaCombat_server runtime.
+학습 모델은 이동 행동을 선택합니다. 스킬 선택과 발동, 전투 규칙은 별도 로직에서 처리하며, 실제 게임에서는 ArenaCombat_server가 해당 처리를 담당합니다.
 
-## Training Analysis
+## 학습 결과 분석
 
-`TRAINING_ANALYSIS.md` contains a 2026-05-25 analysis over 5 matchup types and 2,585 episodes.
+[TRAINING_ANALYSIS.md](TRAINING_ANALYSIS.md)에는 2026년 5월 25일 기준 5개 매치업, 총 2,585에피소드의 분석 결과가 정리되어 있습니다. 해당 분석 문서의 결과는 다음과 같습니다.
 
-Example verified results:
-
-| Matchup | Episodes | Boss Win Rate | Recent 50 Episodes | Grade |
+| 매치업 | 에피소드 수 | 보스 승률 | 최근 50에피소드 승률 | 분석 등급 |
 | --- | ---: | ---: | ---: | --- |
 | Hybrid x CC | 252 | 66.7% | 68.0% | S |
 | Hybrid x Hybrid | 1,464 | 63.6% | 64.0% | A |
@@ -85,40 +83,35 @@ Example verified results:
 | Ranged x Hybrid | 134 | 47.0% | 54.0% | C+ |
 | Ranged x Ranged | 543 | 38.3% | 58.0% | B- |
 
-## ONNX Outputs
+Hybrid는 혼합형, Ranged는 원거리형, CC는 군중제어형 플레이어를 뜻합니다.
 
-The repository contains ONNX outputs in multiple locations, including:
+## ONNX 모델 출력
+
+ONNX 출력물은 다음 경로에 보관되어 있습니다.
 
 - `Assets/Scripts/AI/BossAI/`
 - `onnx_9matchup/`
 - `results/`
 
-Use safe wording for public documentation:
+BuildUp은 ONNX 모델과 함께 ArenaCombat_server에서 모델을 사용하기 위한 관측값 및 행동 규격을 정리합니다. 실제 적용 시 두 환경의 규격과 이동 조건이 일치하는지 확인해야 합니다.
 
-```text
-BuildUp produces ONNX model assets and documents the observation/action spec required for ArenaCombat_server runtime alignment.
-```
+## 관련 문서
 
-## Documentation
+- [프로젝트 개요](docs/portfolio/overview.md)
+- [관측값과 행동 규격](docs/portfolio/observation-action-spec.md)
+- [학습 결과 분석](docs/portfolio/training-analysis.md)
 
-- [Portfolio Overview](docs/portfolio/overview.md)
-- [Observation & Action Spec](docs/portfolio/observation-action-spec.md)
-- [Training Analysis](docs/portfolio/training-analysis.md)
+## 현재 구현 및 검증 범위
 
-## Current Status
+현재 저장소에는 다음 자료가 포함되어 있습니다.
 
-This repository is a training and analysis project, not the main game runtime.
+- Unity 프로젝트 및 패키지 버전 설정
+- 보스 AI 에이전트, 관측값 수집, 학습 환경 및 스킬 관련 코드
+- 학습 결과 ONNX 모델
+- `TRAINING_ANALYSIS.md`에 기록된 매치업별 분석 결과
 
-Verified from local project files:
+추가로 확인할 항목은 다음과 같습니다.
 
-- Unity project and package versions are present.
-- Boss AI agent, observation, training, and skill folders exist.
-- ONNX outputs are present.
-- matchup analysis data is documented in `TRAINING_ANALYSIS.md`.
-
-Needs separate validation before stronger claims:
-
-- final selected production model
-- exact runtime performance inside ArenaCombat_server
-- final balance and behavior quality
-
+- 실제 게임에 사용할 최종 모델 선정
+- ArenaCombat_server에서 각 모델의 동작과 실행 성능
+- 최종 전투 밸런스와 보스 행동 품질

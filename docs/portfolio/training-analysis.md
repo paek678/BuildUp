@@ -2,7 +2,7 @@
 
 ## Verified Source
 
-Training numbers in this document are based on `TRAINING_ANALYSIS.md`.
+Training numbers in this document are based on [TRAINING_ANALYSIS.md](../../TRAINING_ANALYSIS.md).
 
 ## Summary
 
@@ -16,21 +16,8 @@ The analysis dated 2026-05-25 covers 5 matchup types and 2,585 total episodes.
 | Ranged x Hybrid | 134 | 63 | 46 | 25 | 47.0% | 54.0% | C+ |
 | Ranged x Ranged | 543 | 208 | 291 | 44 | 38.3% | 58.0% | B- |
 
-## Portfolio Interpretation
+## Interpretation and Validation
 
-Use these results as analysis evidence, not as a claim that the model is complete.
+The results compare matchup-specific behavior and win rates. They identify stronger and weaker matchups and provide evidence for further tuning.
 
-Safe wording:
-
-```text
-The training analysis compares matchup-specific behavior and win rates, showing where the boss policy was stable and where additional tuning was needed.
-```
-
-Avoid:
-
-```text
-fully solved boss AI
-complete production behavior
-perfect combat balance
-```
-
+These training results do not establish final combat balance or the behavior of each imported model in the multiplayer runtime. Runtime model selection and network play require separate validation.
