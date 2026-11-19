@@ -57,12 +57,31 @@
 
 학습 환경은 Unity 6000.3.11f1과 ML-Agents 4.0.2를 사용합니다. 관측값의 구성, 행동 번호, 학습·실행 환경의 후진 속도 차이는 [관측값과 행동 규격](docs/portfolio/observation-action-spec.md)에 정리했습니다. [학습 프로젝트 개요](docs/portfolio/overview.md)
 
-## 팀원 및 역할
+## 팀원
 
-BuildUp은 테네브리스의 보스 이동 AI 학습 저장소입니다. 전체 게임 프로젝트의 역할 분담은 다음과 같습니다.
-
-| 이름 | 구분 | 담당 역할 |
-| --- | --- | --- |
-| 백성열 | 팀장 | 게임 기획, 서버 구축, 몬스터 AI 구현 |
-| 홍채영 | 팀원 | 클라이언트 개발, 서버 연결, 셰이더 추가 |
-| 곽다영 | 팀원 | UI/UX |
+<div align="center">
+<table>
+  <thead>
+    <tr>
+      <th>백성열</th>
+      <th>홍채영</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td align="center">
+        <a href="https://github.com/paek678"><img src="https://avatars.githubusercontent.com/paek678?size=150" width="150" height="150" alt="백성열 GitHub 프로필 사진"></a>
+        <br><a href="https://github.com/paek678">@paek678</a>
+      </td>
+      <td align="center">
+        <a href="https://github.com/hongchaeyoung0918-code"><img src="https://avatars.githubusercontent.com/hongchaeyoung0918-code?size=150" width="150" height="150" alt="홍채영 GitHub 프로필 사진"></a>
+        <br><a href="https://github.com/hongchaeyoung0918-code">@hongchaeyoung0918-code</a>
+      </td>
+    </tr>
+    <tr>
+      <td align="center">기획 · 서버 구축 · 몬스터 AI 구현</td>
+      <td align="center">클라이언트 개발 · 서버 연결 · 셰이더 추가</td>
+    </tr>
+  </tbody>
+</table>
+</div>
