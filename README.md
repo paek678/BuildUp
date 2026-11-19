@@ -17,6 +17,27 @@
 | 반복 학습 | Unity ML-Agents의 **PPO** 알고리즘으로 이동 정책을 학습하고, 에피소드별 승패·전투 시간·이동 행동 비율을 CSV에 기록합니다. |
 | 게임에 적용 | 학습한 정책을 **ONNX 모델**로 내보냅니다. 게임에서는 두 플레이어의 성향 조합에 맞는 모델을 선택해 이동을 결정합니다. 스킬 선택과 피해 판정은 게임의 전투 로직이 담당합니다. |
 
+## 학습에서 게임 적용까지
+
+봇 대전을 반복하며 이동 정책을 학습하고, 학습한 모델을 게임에서 불러와 보스의 다음 이동을 결정합니다.
+
+```mermaid
+flowchart TD
+    Bots["두 플레이어 봇과 보스의 전투"] --> Observe["위치·거리·체력·스킬 상태<br/>129개 관측값 수집"]
+    Observe --> Policy["이동 정책이 행동 선택"]
+    Policy --> Action["대기 · 전진 · 좌회전 · 우회전 · 후진"]
+    Action --> Sim["학습 환경에서 이동·전투 진행"]
+    Sim --> Reward["전투 결과와 보상 계산"]
+    Reward --> PPO["PPO로 이동 정책 갱신"]
+    PPO --> Policy
+    Sim --> CSV["에피소드 CSV 기록<br/>승패·전투 시간·행동 비율 분석"]
+    PPO --> Export["학습한 정책을 ONNX로 출력"]
+    Export --> Runtime["ArenaCombat_server<br/>두 플레이어 성향에 맞는 모델 선택"]
+    Runtime --> Infer["게임 중 전투 정보를 입력해 이동 추론"]
+```
+
+BuildUp에서 학습한 가중치를 ONNX 파일로 전달하고, 게임 실행 환경에서는 준비된 모델을 선택·교체합니다. 스킬 선택과 피해 판정은 별도의 전투 로직에서 처리합니다.
+
 ## 관측값·이동 모델과 플레이어 봇 설정
 
 ![보스의 Behavior Parameters에 지정된 129개 관측값, 5개 이산 이동 행동과 ONNX 모델](docs/screenshots/observation-action-model.png)
@@ -45,3 +66,13 @@
 | [게임 내 모델 선택 코드](https://github.com/paek678/ArenaCombat_server/blob/main/Assets/ArenaCombat/Scripts/Core/AI/BossAIPoolManager.cs) | 두 플레이어의 성향 조합에 따라 호스트가 이동 모델을 선택·교체하는 과정 |
 
 학습 환경은 Unity 6000.3.11f1과 ML-Agents 4.0.2를 사용합니다. 관측값의 구성, 행동 번호, 학습·실행 환경의 후진 속도 차이는 [관측값과 행동 규격](docs/portfolio/observation-action-spec.md)에 정리했습니다. [학습 프로젝트 개요](docs/portfolio/overview.md)
+
+## 팀원 및 역할
+
+BuildUp은 테네브리스의 보스 이동 AI 학습 저장소입니다. 전체 게임 프로젝트의 역할 분담은 다음과 같습니다.
+
+| 이름 | 구분 | 담당 역할 |
+| --- | --- | --- |
+| 백성열 | 팀장 | 게임 기획, 서버 구축, 몬스터 AI 구현 |
+| 홍채영 | 팀원 | 클라이언트 개발, 서버 연결, 셰이더 추가 |
+| 곽다영 | 팀원 | UI/UX |
